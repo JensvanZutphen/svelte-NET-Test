@@ -1,25 +1,31 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// 1) Define CORS policy name
+const string WebsiteClientOrigin = "website_client";
+
+// 2) Configure CORS to allow your actual client URL
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(WebsiteClientOrigin, policy =>
+    {
+        // Add both prod and dev origins here
+        policy.WithOrigins(
+                "https://your-production-site.com",
+                "http://localhost:3000"      // ← add this
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 
-const string WebsiteClientOrigin = "website_client";
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(WebsiteClientOrigin, policy =>
-    {
-        var website = builder.Configuration["Endpoints:Website"];
-        if (website != null)
-        {
-            policy.WithOrigins(website).AllowAnyHeader().AllowAnyMethod();
-        }
-    });
-});
-
 var app = builder.Build();
+
+// 3) Register CORS middleware before controllers
+app.UseCors(WebsiteClientOrigin);
 
 if (app.Environment.IsDevelopment())
 {
@@ -28,6 +34,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors(WebsiteClientOrigin);
 app.MapControllers();
 app.Run();

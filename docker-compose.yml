@@ -1,0 +1,12 @@
+services:
+  web:
+    build:
+      context: ./MySvelteApp.Client
+      dockerfile: Dockerfile
+    ports: ["3000:3000"]
+    depends_on: ["api"]
+  api:
+    build:
+      context: .
+      dockerfile: MySvelteApp.Server/Dockerfile
+    ports: ["8080:8080"]
