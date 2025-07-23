@@ -1,3 +1,2 @@
-MySvelteApp.Server/obj/Debug/net9.0/MySvelteApp.Server.AssemblyInfo.cs
-MySvelteApp.Server/obj/Debug/net9.0/MySvelteApp.Server.AssemblyInfoInputs.cache
-MySvelteApp.Server/obj/Debug/net9.0/MySvelteApp.Server.assets.cache
+/MySvelteApp.Server/obj
+/MySvelteApp.Server/bin
