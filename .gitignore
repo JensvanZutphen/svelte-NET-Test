@@ -1,4 +1,3 @@
-MySvelteApp.Client/node_modules
-MySvelteApp.Client/obj
-MySvelteApp.Server/bin
-MySvelteApp.Server/obj
+MySvelteApp.Server/obj/Debug/net9.0/MySvelteApp.Server.AssemblyInfo.cs
+MySvelteApp.Server/obj/Debug/net9.0/MySvelteApp.Server.AssemblyInfoInputs.cache
+MySvelteApp.Server/obj/Debug/net9.0/MySvelteApp.Server.assets.cache
