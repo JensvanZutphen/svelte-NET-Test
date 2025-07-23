@@ -1,0 +1,4 @@
+MySvelteApp.Client/node_modules
+MySvelteApp.Client/obj
+MySvelteApp.Server/bin
+MySvelteApp.Server/obj

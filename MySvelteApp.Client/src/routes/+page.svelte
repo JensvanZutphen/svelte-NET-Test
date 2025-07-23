@@ -1,9 +1,3 @@
-<script>
-    import PageTitle from "./components/PageTitle.svelte";
-</script>
-
-<PageTitle>Index</PageTitle>
-
 <h1>Hello, world!</h1>
 
 Welcome to your new app.

@@ -1,14 +1,12 @@
 <script>
 	import '../app.css';
-	import NavMenu from './components/NavMenu.svelte';
 </script>
 
 <div class="page">
-	<div class="sidebar">
-		<NavMenu />
-	</div>
 	<main>
 		<div class="top-row px-4">
+			<a href="/">Home</a>
+			<a href="/fetchdata">Fetch data</a>
 			<a href="https://docs.microsoft.com/aspnet/" target="_blank" rel="noreferrer">About</a>
 		</div>
 		<article class="content px-4">
@@ -28,10 +26,6 @@
 		flex: 1;
 	}
 
-	.sidebar {
-		background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
-	}
-
 	.top-row {
 		background-color: #f7f7f7;
 		border-bottom: 1px solid #d6d5d5;
@@ -42,14 +36,20 @@
 	}
 
 	.top-row a,
-	.top-row .btn-link {
+	.top-row .btn-link,
+	.top-row button {
 		white-space: nowrap;
 		margin-left: 1.5rem;
 		text-decoration: none;
+		background: none;
+		border: none;
+		font: inherit;
+		cursor: pointer;
 	}
 
 	.top-row a:hover,
-	.top-row .btn-link:hover {
+	.top-row .btn-link:hover,
+	.top-row button:hover {
 		text-decoration: underline;
 	}
 
@@ -59,17 +59,15 @@
 	}
 
 	@media (max-width: 640.98px) {
-		.top-row:not(.auth) {
-			display: none;
+		.top-row {
+			flex-wrap: wrap;
+			justify-content: flex-start;
 		}
-
-		.top-row.auth {
-			justify-content: space-between;
-		}
-
 		.top-row a,
-		.top-row .btn-link {
-			margin-left: 0;
+		.top-row .btn-link,
+		.top-row button {
+			margin-left: 0.5rem;
+			margin-right: 0.5rem;
 		}
 	}
 
@@ -78,20 +76,13 @@
 			flex-direction: row;
 		}
 
-		.sidebar {
-			width: 250px;
-			height: 100vh;
-			position: sticky;
-			top: 0;
-		}
-
 		.top-row {
 			position: sticky;
 			top: 0;
 			z-index: 1;
 		}
 
-		.top-row.auth a:first-child {
+		.top-row a:first-child {
 			flex: 1;
 			text-align: right;
 			width: 0;

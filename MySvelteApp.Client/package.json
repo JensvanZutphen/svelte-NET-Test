@@ -39,5 +39,10 @@
 		"typescript-eslint": "^8.20.0",
 		"vite": "^6.1.0"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@zodios/core": "^10.9.6",
+		"axios": "^1.11.0",
+		"zod": "^3.25.76"
+	}
 }

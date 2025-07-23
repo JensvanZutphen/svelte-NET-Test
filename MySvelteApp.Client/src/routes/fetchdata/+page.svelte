@@ -1,26 +1,21 @@
 <script lang="ts">
-    import PageTitle from "../components/PageTitle.svelte";
     import { onMount } from "svelte";
-    import { Api, type WeatherForecast } from "../../api";
-    import { config } from "../../config";
-
-    let forecasts : Array<WeatherForecast> = [];
-
-    onMount(async () =>
-    {
-        const api = new Api();
-        api.baseUrl = config.apiEndpoint;
-        
-        const response = await api.weatherForecast.weatherForecastList();
-        
-        if (response.status == 200)
-        {
-            forecasts = response.data;
-        }
+    import { api, schemas } from "$api";
+  
+    type WeatherForecast = typeof schemas.WeatherForecast._type; // This is getting the type from the Zod schema so you do not need to use api.ts
+    let forecasts: WeatherForecast[] = [];
+  
+    onMount(async () => {
+      try {
+        // The Zod client already does runtime validation!
+        forecasts = await api.getWeatherForecast();
+      } catch (error) {
+        console.error("Failed to fetch or validate weather data:", error);
+        forecasts = [];
+      }
     });
-</script>
-
-<PageTitle>Weather forecast</PageTitle>
+  </script>
+  
 
 <h1>Weather forecast</h1>
 
