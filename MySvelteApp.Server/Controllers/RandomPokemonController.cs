@@ -53,6 +53,7 @@ public class RandomPokemonController : ControllerBase
         var pokeApi = JsonSerializer.Deserialize<PokeApiResponse>(pokemonContent);
         if (pokeApi == null)
             throw new Exception("Failed to deserialize Pokemon data.");
+        Console.WriteLine(pokeApi.name);
         return new RandomPokemon
         {
             Name = pokeApi.name,

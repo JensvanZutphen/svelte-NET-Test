@@ -8,11 +8,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(WebsiteClientOrigin, policy =>
     {
-        // Add both prod and dev origins here
-        policy.WithOrigins(
-                "https://your-production-site.com",
-                "http://localhost:3000"      // ← add this
-            )
+        policy
+            .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });

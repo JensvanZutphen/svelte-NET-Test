@@ -14,7 +14,8 @@
     <PackageJsonScriptsLint Condition="$(PackageJsonScriptsLint) == ''">prettier --check . &amp;&amp; eslint .</PackageJsonScriptsLint>
     <PackageJsonDevdependenciesEslintCompat Condition="$(PackageJsonDevdependenciesEslintCompat) == ''">^1.2.5</PackageJsonDevdependenciesEslintCompat>
     <PackageJsonDevdependenciesEslintJs Condition="$(PackageJsonDevdependenciesEslintJs) == ''">^9.18.0</PackageJsonDevdependenciesEslintJs>
-    <PackageJsonDevdependenciesSveltejsAdapterAuto Condition="$(PackageJsonDevdependenciesSveltejsAdapterAuto) == ''">^6.0.0</PackageJsonDevdependenciesSveltejsAdapterAuto>
+    <PackageJsonDevdependenciesSveltejsAdapterAuto Condition="$(PackageJsonDevdependenciesSveltejsAdapterAuto) == ''">^6.0.1</PackageJsonDevdependenciesSveltejsAdapterAuto>
+    <PackageJsonDevdependenciesSveltejsAdapterNode Condition="$(PackageJsonDevdependenciesSveltejsAdapterNode) == ''">^5.2.13</PackageJsonDevdependenciesSveltejsAdapterNode>
     <PackageJsonDevdependenciesSveltejsKit Condition="$(PackageJsonDevdependenciesSveltejsKit) == ''">^2.20.8</PackageJsonDevdependenciesSveltejsKit>
     <PackageJsonDevdependenciesSveltejsVitePluginSvelte Condition="$(PackageJsonDevdependenciesSveltejsVitePluginSvelte) == ''">^5.0.3</PackageJsonDevdependenciesSveltejsVitePluginSvelte>
     <PackageJsonDevdependenciesTailwindcssForms Condition="$(PackageJsonDevdependenciesTailwindcssForms) == ''">^0.5.9</PackageJsonDevdependenciesTailwindcssForms>

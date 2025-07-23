@@ -1,25 +1,32 @@
 <script>
-	import '../app.css';
+  import '../app.css';
 </script>
 
-<div class="flex min-h-screen flex-col md:flex-row">
-	<main class="flex-1">
-		<div
-			class="sticky top-0 z-10 flex h-14 items-center justify-end border-b border-gray-300 bg-gray-100 px-4 md:justify-end md:px-8"
-		>
-			<a href="/" class="ml-0 truncate text-blue-600 hover:underline md:w-0 md:flex-1 md:text-right"
-				>Home</a
-			>
-			<a href="/fetchdata" class="ml-6 text-blue-600 hover:underline">Fetch data</a>
-			<a
-				href="https://docs.microsoft.com/aspnet/"
-				target="_blank"
-				rel="noreferrer"
-				class="ml-6 text-blue-600 hover:underline">About</a
-			>
-		</div>
-		<article class="content px-4 md:px-8">
-			<slot />
-		</article>
-	</main>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 flex flex-col">
+  <!-- Header / Navbar -->
+  <header class="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-gray-200 shadow-sm">
+    <nav class="max-w-4xl mx-auto flex items-center justify-between h-16 px-4 md:px-8">
+      <div class="flex items-center space-x-3">
+        <img src="/favicon.png" alt="Logo" class="w-8 h-8" />
+        <span class="text-xl font-bold text-pink-700 tracking-wide">Svelte-NET Demo</span>
+      </div>
+      <div class="flex items-center space-x-6">
+        <a href="/" class="text-blue-600 hover:text-pink-600 font-medium transition-colors">Home</a>
+        <a href="/fetchdata" class="text-blue-600 hover:text-pink-600 font-medium transition-colors">Fetch Data</a>
+        <a
+          href="https://docs.microsoft.com/aspnet/"
+          target="_blank"
+          rel="noreferrer"
+          class="text-blue-600 hover:text-pink-600 font-medium transition-colors"
+        >About</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col items-center justify-center py-8">
+    <article class="w-full max-w-2xl bg-white/90 rounded-3xl shadow-xl p-6 md:p-10 mt-6">
+      <slot />
+    </article>
+  </main>
 </div>
