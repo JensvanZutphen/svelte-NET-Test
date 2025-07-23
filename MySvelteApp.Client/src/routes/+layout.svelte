@@ -2,96 +2,24 @@
 	import '../app.css';
 </script>
 
-<div class="page">
-	<main>
-		<div class="top-row px-4">
-			<a href="/">Home</a>
-			<a href="/fetchdata">Fetch data</a>
-			<a href="https://docs.microsoft.com/aspnet/" target="_blank" rel="noreferrer">About</a>
+<div class="flex min-h-screen flex-col md:flex-row">
+	<main class="flex-1">
+		<div
+			class="sticky top-0 z-10 flex h-14 items-center justify-end border-b border-gray-300 bg-gray-100 px-4 md:justify-end md:px-8"
+		>
+			<a href="/" class="ml-0 truncate text-blue-600 hover:underline md:w-0 md:flex-1 md:text-right"
+				>Home</a
+			>
+			<a href="/fetchdata" class="ml-6 text-blue-600 hover:underline">Fetch data</a>
+			<a
+				href="https://docs.microsoft.com/aspnet/"
+				target="_blank"
+				rel="noreferrer"
+				class="ml-6 text-blue-600 hover:underline">About</a
+			>
 		</div>
-		<article class="content px-4">
+		<article class="content px-4 md:px-8">
 			<slot />
 		</article>
 	</main>
 </div>
-
-<style>
-	.page {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-	}
-
-	main {
-		flex: 1;
-	}
-
-	.top-row {
-		background-color: #f7f7f7;
-		border-bottom: 1px solid #d6d5d5;
-		justify-content: flex-end;
-		height: 3.5rem;
-		display: flex;
-		align-items: center;
-	}
-
-	.top-row a,
-	.top-row .btn-link,
-	.top-row button {
-		white-space: nowrap;
-		margin-left: 1.5rem;
-		text-decoration: none;
-		background: none;
-		border: none;
-		font: inherit;
-		cursor: pointer;
-	}
-
-	.top-row a:hover,
-	.top-row .btn-link:hover,
-	.top-row button:hover {
-		text-decoration: underline;
-	}
-
-	.top-row a:first-child {
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	@media (max-width: 640.98px) {
-		.top-row {
-			flex-wrap: wrap;
-			justify-content: flex-start;
-		}
-		.top-row a,
-		.top-row .btn-link,
-		.top-row button {
-			margin-left: 0.5rem;
-			margin-right: 0.5rem;
-		}
-	}
-
-	@media (min-width: 641px) {
-		.page {
-			flex-direction: row;
-		}
-
-		.top-row {
-			position: sticky;
-			top: 0;
-			z-index: 1;
-		}
-
-		.top-row a:first-child {
-			flex: 1;
-			text-align: right;
-			width: 0;
-		}
-
-		.top-row,
-		article {
-			padding-left: 2rem !important;
-			padding-right: 1.5rem !important;
-		}
-	}
-</style>

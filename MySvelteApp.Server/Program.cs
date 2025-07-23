@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient();
 
 const string WebsiteClientOrigin = "website_client";
 builder.Services.AddCors(options =>

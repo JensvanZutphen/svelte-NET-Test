@@ -4,13 +4,22 @@ import { z } from "zod";
 
 
 
-const WeatherForecast = z.object({ temperatureC: z.number().int(), summary: z.string().nullable(), temperatureF: z.number().int(), date: z.string() }).partial();
+const RandomPokemon = z.object({ name: z.string().nullable(), type: z.string().nullable(), image: z.string().nullable() }).partial();
+const WeatherForecast = z.object({ date: z.string(), temperatureC: z.number().int(), summary: z.string().nullable(), temperatureF: z.number().int() }).partial();
 
 export const schemas = {
+	RandomPokemon,
 	WeatherForecast,
 };
 
 const endpoints = makeApi([
+	{
+		method: "get",
+		path: "/RandomPokemon",
+		alias: "getRandomPokemon",
+		requestFormat: "json",
+		response: RandomPokemon,
+	},
 	{
 		method: "get",
 		path: "/WeatherForecast",
