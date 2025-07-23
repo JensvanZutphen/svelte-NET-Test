@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <PackageJsonName Condition="$(PackageJsonName) == ''">client2</PackageJsonName>
+    <PackageJsonVersion Condition="$(PackageJsonVersion) == ''">0.0.1</PackageJsonVersion>
+    <PackageJsonPrivate Condition="$(PackageJsonPrivate) == ''">true</PackageJsonPrivate>
+    <PackageJsonScriptsGenerateApiClasses Condition="$(PackageJsonScriptsGenerateApiClasses) == ''">npx tsx ./src/generateApiClasses.ts</PackageJsonScriptsGenerateApiClasses>
+    <PackageJsonScriptsDev Condition="$(PackageJsonScriptsDev) == ''">vite dev</PackageJsonScriptsDev>
+    <PackageJsonScriptsBuild Condition="$(PackageJsonScriptsBuild) == ''">vite build</PackageJsonScriptsBuild>
+    <PackageJsonScriptsPreview Condition="$(PackageJsonScriptsPreview) == ''">vite preview</PackageJsonScriptsPreview>
+    <PackageJsonScriptsCheck Condition="$(PackageJsonScriptsCheck) == ''">svelte-kit sync &amp;&amp; svelte-check --tsconfig ./tsconfig.json</PackageJsonScriptsCheck>
+    <PackageJsonScriptsCheckWatch Condition="$(PackageJsonScriptsCheckWatch) == ''">svelte-kit sync &amp;&amp; svelte-check --tsconfig ./tsconfig.json --watch</PackageJsonScriptsCheckWatch>
+    <PackageJsonDevdependenciesSveltejsAdapterAuto Condition="$(PackageJsonDevdependenciesSveltejsAdapterAuto) == ''">^6.0.0</PackageJsonDevdependenciesSveltejsAdapterAuto>
+    <PackageJsonDevdependenciesSveltejsKit Condition="$(PackageJsonDevdependenciesSveltejsKit) == ''">^2.20.8</PackageJsonDevdependenciesSveltejsKit>
+    <PackageJsonDevdependenciesSveltejsVitePluginSvelte Condition="$(PackageJsonDevdependenciesSveltejsVitePluginSvelte) == ''">^5.0.3</PackageJsonDevdependenciesSveltejsVitePluginSvelte>
+    <PackageJsonDevdependenciesTypesNode Condition="$(PackageJsonDevdependenciesTypesNode) == ''">^22.13.4</PackageJsonDevdependenciesTypesNode>
+    <PackageJsonDevdependenciesSvelte Condition="$(PackageJsonDevdependenciesSvelte) == ''">^5.20.1</PackageJsonDevdependenciesSvelte>
+    <PackageJsonDevdependenciesSvelteCheck Condition="$(PackageJsonDevdependenciesSvelteCheck) == ''">^4.1.4</PackageJsonDevdependenciesSvelteCheck>
+    <PackageJsonDevdependenciesSwaggerTypescriptApi Condition="$(PackageJsonDevdependenciesSwaggerTypescriptApi) == ''">^13.0.23</PackageJsonDevdependenciesSwaggerTypescriptApi>
+    <PackageJsonDevdependenciesTslib Condition="$(PackageJsonDevdependenciesTslib) == ''">^2.8.1</PackageJsonDevdependenciesTslib>
+    <PackageJsonDevdependenciesTsx Condition="$(PackageJsonDevdependenciesTsx) == ''">^4.19.2</PackageJsonDevdependenciesTsx>
+    <PackageJsonDevdependenciesTypescript Condition="$(PackageJsonDevdependenciesTypescript) == ''">^5.7.3</PackageJsonDevdependenciesTypescript>
+    <PackageJsonDevdependenciesVite Condition="$(PackageJsonDevdependenciesVite) == ''">^6.1.0</PackageJsonDevdependenciesVite>
+    <PackageJsonType Condition="$(PackageJsonType) == ''">module</PackageJsonType>
+  </PropertyGroup>
+</Project>
