@@ -4,7 +4,7 @@
     <PackageJsonName Condition="$(PackageJsonName) == ''">client2</PackageJsonName>
     <PackageJsonVersion Condition="$(PackageJsonVersion) == ''">0.0.1</PackageJsonVersion>
     <PackageJsonPrivate Condition="$(PackageJsonPrivate) == ''">true</PackageJsonPrivate>
-    <PackageJsonScriptsGenerateApiClasses Condition="$(PackageJsonScriptsGenerateApiClasses) == ''">npx tsx ./src/generateApiClasses.ts</PackageJsonScriptsGenerateApiClasses>
+    <PackageJsonScriptsGenerateApiClasses Condition="$(PackageJsonScriptsGenerateApiClasses) == ''">npx @hey-api/openapi-ts</PackageJsonScriptsGenerateApiClasses>
     <PackageJsonScriptsDev Condition="$(PackageJsonScriptsDev) == ''">vite dev</PackageJsonScriptsDev>
     <PackageJsonScriptsBuild Condition="$(PackageJsonScriptsBuild) == ''">vite build</PackageJsonScriptsBuild>
     <PackageJsonScriptsPreview Condition="$(PackageJsonScriptsPreview) == ''">vite preview</PackageJsonScriptsPreview>
@@ -39,8 +39,11 @@
     <PackageJsonDevdependenciesTypescriptEslint Condition="$(PackageJsonDevdependenciesTypescriptEslint) == ''">^8.20.0</PackageJsonDevdependenciesTypescriptEslint>
     <PackageJsonDevdependenciesVite Condition="$(PackageJsonDevdependenciesVite) == ''">^6.1.0</PackageJsonDevdependenciesVite>
     <PackageJsonType Condition="$(PackageJsonType) == ''">module</PackageJsonType>
+    <PackageJsonDependenciesHeyApiClientFetch Condition="$(PackageJsonDependenciesHeyApiClientFetch) == ''">^0.13.1</PackageJsonDependenciesHeyApiClientFetch>
+    <PackageJsonDependenciesHeyApiOpenapiTs Condition="$(PackageJsonDependenciesHeyApiOpenapiTs) == ''">^0.80.0</PackageJsonDependenciesHeyApiOpenapiTs>
     <PackageJsonDependenciesZodiosCore Condition="$(PackageJsonDependenciesZodiosCore) == ''">^10.9.6</PackageJsonDependenciesZodiosCore>
+    <PackageJsonDependenciesZodiosPlugins Condition="$(PackageJsonDependenciesZodiosPlugins) == ''">^10.6.0</PackageJsonDependenciesZodiosPlugins>
     <PackageJsonDependenciesAxios Condition="$(PackageJsonDependenciesAxios) == ''">^1.11.0</PackageJsonDependenciesAxios>
-    <PackageJsonDependenciesZod Condition="$(PackageJsonDependenciesZod) == ''">^3.25.76</PackageJsonDependenciesZod>
+    <PackageJsonDependenciesZod Condition="$(PackageJsonDependenciesZod) == ''">^4.0.8</PackageJsonDependenciesZod>
   </PropertyGroup>
 </Project>

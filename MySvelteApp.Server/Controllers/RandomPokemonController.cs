@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MySvelteApp.Server.Models;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MySvelteApp.Server.Controllers;
 
@@ -63,6 +64,7 @@ public class RandomPokemonController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<RandomPokemon> Get()
     {
         return await GetRandomPokemon();

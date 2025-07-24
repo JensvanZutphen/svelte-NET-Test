@@ -1,5 +1,5 @@
 <script>
-  import '../app.css';
+  import '$src/app.css';
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 flex flex-col">
@@ -19,6 +19,14 @@
           rel="noreferrer"
           class="text-blue-600 hover:text-pink-600 font-medium transition-colors"
         >About</a>
+        <form method="POST" action="/logout">
+          <button 
+            type="submit"
+            class="text-blue-600 hover:text-pink-600 font-medium transition-colors"
+          >
+            Logout
+          </button>
+        </form>
       </div>
     </nav>
   </header>

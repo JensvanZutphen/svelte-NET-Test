@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MySvelteApp.Server.Models;
+using Microsoft.AspNetCore.Authorization;
+
 namespace MySvelteApp.Server.Controllers;
 
 [ApiController]
@@ -28,6 +30,7 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public IEnumerable<WeatherForecast> Get()
     {
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast

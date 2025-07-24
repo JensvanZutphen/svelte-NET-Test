@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"generate-api-classes": "npx tsx ./src/generateApiClasses.ts",
+		"generate-api-classes": "npx @hey-api/openapi-ts",
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
@@ -42,8 +42,11 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@hey-api/client-fetch": "^0.13.1",
+		"@hey-api/openapi-ts": "^0.80.0",
 		"@zodios/core": "^10.9.6",
+		"@zodios/plugins": "^10.6.0",
 		"axios": "^1.11.0",
-		"zod": "^3.25.76"
+		"zod": "^4.0.8"
 	}
 }
