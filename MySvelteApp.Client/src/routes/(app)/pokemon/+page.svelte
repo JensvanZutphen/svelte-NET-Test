@@ -4,6 +4,8 @@
   import { onMount } from 'svelte';
 
   let pokemonPromise = $state<Promise<any> | null>(null);
+  let imageLoaded = $state(false);
+  let imageError = $state(false);
 
   onMount(() => {
     pokemonPromise = getRandomPokemon();
@@ -11,6 +13,18 @@
 
   function refreshPokemon() {
     pokemonPromise = getRandomPokemon();
+    imageLoaded = false;
+    imageError = false;
+  }
+
+  function onImageLoad() {
+    imageLoaded = true;
+    imageError = false;
+  }
+
+  function onImageError() {
+    imageLoaded = false;
+    imageError = true;
   }
 </script>
 
@@ -34,13 +48,24 @@
           </div>
         {:then response}
           <div class="w-80 bg-white bg-opacity-90 rounded-3xl shadow-2xl flex flex-col items-center p-8 transition-all">
+            {#if !imageLoaded && !imageError}
+              <div class="w-40 h-40 mb-4 flex items-center justify-center">
+                <div class="animate-pulse w-16 h-16 rounded-full bg-pink-200"></div>
+              </div>
+            {/if}
             <img
               src={response.data?.image}
               alt={response.data?.name}
-              class="w-40 h-40 object-contain mb-4 drop-shadow-lg rounded-full border-4 border-pink-200 bg-pink-50"
+              class="w-40 h-40 object-contain mb-4 drop-shadow-lg rounded-full border-4 border-pink-200 bg-pink-50 transition-opacity duration-300 ease-in-out"
+              class:opacity-0={!imageLoaded && !imageError}
+              class:opacity-100={imageLoaded}
               width="200"
               height="200"
-              loading="lazy"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              onload={onImageLoad}
+              onerror={onImageError}
             />
             <h2 class="text-2xl font-bold text-blue-700 mb-2 tracking-wide">{response.data?.name?.toUpperCase()}</h2>
             <p class="text-lg font-medium text-pink-600 mb-2">{response.data?.type?.toUpperCase()}</p>
