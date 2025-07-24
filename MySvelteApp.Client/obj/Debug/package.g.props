@@ -42,8 +42,6 @@
     <PackageJsonType Condition="$(PackageJsonType) == ''">module</PackageJsonType>
     <PackageJsonDependenciesHeyApiClientFetch Condition="$(PackageJsonDependenciesHeyApiClientFetch) == ''">^0.13.1</PackageJsonDependenciesHeyApiClientFetch>
     <PackageJsonDependenciesHeyApiOpenapiTs Condition="$(PackageJsonDependenciesHeyApiOpenapiTs) == ''">^0.80.0</PackageJsonDependenciesHeyApiOpenapiTs>
-    <PackageJsonDependenciesZodiosCore Condition="$(PackageJsonDependenciesZodiosCore) == ''">^10.9.6</PackageJsonDependenciesZodiosCore>
-    <PackageJsonDependenciesZodiosPlugins Condition="$(PackageJsonDependenciesZodiosPlugins) == ''">^10.6.0</PackageJsonDependenciesZodiosPlugins>
     <PackageJsonDependenciesAxios Condition="$(PackageJsonDependenciesAxios) == ''">^1.11.0</PackageJsonDependenciesAxios>
     <PackageJsonDependenciesZod Condition="$(PackageJsonDependenciesZod) == ''">^4.0.8</PackageJsonDependenciesZod>
   </PropertyGroup>

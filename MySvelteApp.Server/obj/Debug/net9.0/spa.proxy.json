@@ -3,7 +3,7 @@
 "ServerUrl": "http://localhost:5173",
 "RedirectUrl": "",
 "LaunchCommand": "npm run dev",
-"WorkingDirectory": "C:\\Users\\jensv\\svelte-NET-Test\\MySvelteApp.Server\\..\\MySvelteApp.Client",
+"WorkingDirectory": "C:\\Users\\j.v.zutphen.GOOSKENS\\source\\repos\\JensvanZutphen\\svelte-NET-Test\\MySvelteApp.Server\\..\\MySvelteApp.Client",
 "MaxTimeoutInSeconds": "120",
 "KeepRunning": "false"
 }
