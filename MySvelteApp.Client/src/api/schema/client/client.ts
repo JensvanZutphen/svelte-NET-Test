@@ -62,7 +62,6 @@ export const createClient = (config: Config = {}): Client => {
     const url = buildUrl(opts);
     const requestInit: ReqInit = {
       redirect: 'follow',
-      credentials: 'include',
       ...opts,
     };
 
