@@ -1,2 +1,0 @@
-C:\Users\jensv\svelte-NET-Test\MySvelteApp.Client\obj\Debug\MySvelteApp.Client.esproj.CoreCompileInputs.cache
-C:\Users\j.v.zutphen.GOOSKENS\source\repos\JensvanZutphen\svelte-NET-Test\MySvelteApp.Client\obj\Debug\MySvelteApp.Client.esproj.CoreCompileInputs.cache
