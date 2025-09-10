@@ -26,15 +26,45 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
+        // Validate input
+        if (string.IsNullOrWhiteSpace(model.Username))
+            return BadRequest(new { message = "Username is required." });
+
+        if (model.Username.Length < 3)
+            return BadRequest(new { message = "Username must be at least 3 characters long." });
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(model.Username, "^[a-zA-Z0-9_]+$"))
+            return BadRequest(new { message = "Username can only contain letters, numbers, and underscores." });
+
+        if (string.IsNullOrWhiteSpace(model.Email))
+            return BadRequest(new { message = "Email is required." });
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(model.Email, @"^[^\s@]+@[^\s@]+\.[^\s@]+$"))
+            return BadRequest(new { message = "Please enter a valid email address." });
+
+        if (string.IsNullOrWhiteSpace(model.Password))
+            return BadRequest(new { message = "Password is required." });
+
+        if (model.Password.Length < 8)
+            return BadRequest(new { message = "Password must be at least 8 characters long." });
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(model.Password, @"(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"))
+            return BadRequest(new { message = "Password must contain at least one uppercase letter, one lowercase letter, and one number." });
+
+        // Check if username is already taken
         if (await _context.Users.AnyAsync(u => u.Username == model.Username))
-            return BadRequest(new { message = "Username is taken." });
+            return BadRequest(new { message = "This username is already taken. Please choose a different one." });
+
+        // Check if email is already registered
+        if (await _context.Users.AnyAsync(u => u.Email == model.Email))
+            return BadRequest(new { message = "This email is already registered. Please use a different email address." });
 
         CreatePasswordHash(model.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
         var user = new User
         {
-            Username = model.Username,
-            Email = model.Email,
+            Username = model.Username.Trim(),
+            Email = model.Email.Trim().ToLower(),
             PasswordHash = Convert.ToBase64String(passwordHash)
         };
 
@@ -49,12 +79,19 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == model.Username);
+        // Validate input
+        if (string.IsNullOrWhiteSpace(model.Username))
+            return BadRequest(new { message = "Username is required." });
+
+        if (string.IsNullOrWhiteSpace(model.Password))
+            return BadRequest(new { message = "Password is required." });
+
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == model.Username.Trim());
         if (user == null)
-            return Unauthorized(new { message = "Invalid username or password." });
+            return Unauthorized(new { message = "Invalid username or password. Please check your credentials and try again." });
 
         if (!VerifyPasswordHash(model.Password, Convert.FromBase64String(user.PasswordHash)))
-            return Unauthorized(new { message = "Invalid username or password." });
+            return Unauthorized(new { message = "Invalid username or password. Please check your credentials and try again." });
 
         var token = _jwtService.GenerateToken(user.Id.ToString(), user.Username);
         return Ok(new { token, userId = user.Id, username = user.Username });

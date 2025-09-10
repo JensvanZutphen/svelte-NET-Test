@@ -41,5 +41,5 @@
 
   // First ensure the workspace is owned by vscode (uid/gid=1000 usually),
   // then install client deps and restore .NET.
-  "postCreateCommand": "sudo chown -R vscode:vscode /workspace && npm ci --prefix MySvelteApp.Client && dotnet restore"
+  "postCreateCommand": "sudo chown -R vscode:vscode /workspace && npm ci --prefix MySvelteApp.Client && dotnet restore && npm install --global @ast-grep/cli"
 }

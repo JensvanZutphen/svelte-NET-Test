@@ -13,6 +13,9 @@ const config = {
     },
     kit: {
         adapter: adapter(),
+        experimental: {
+            remoteFunctions: true
+        },
         alias: { $api: './src/api',
             $static: './static',
             $src: './src',
@@ -22,7 +25,7 @@ const config = {
             $routes: './src/routes',
             $components: './src/components',
             $utils: './src/utils',
-            $states: './src/states',
+            $server: './src/server',
          }
     }
 };

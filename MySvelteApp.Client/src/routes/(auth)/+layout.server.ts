@@ -8,6 +8,6 @@ export const load = (async ({ cookies }) => {
     if (token) {
         // Optionally validate token with backend here
         authService.setToken(token);
-        throw redirect(302, '/');
+        throw redirect(302, '/pokemon');
     }
 }) satisfies LayoutServerLoad;

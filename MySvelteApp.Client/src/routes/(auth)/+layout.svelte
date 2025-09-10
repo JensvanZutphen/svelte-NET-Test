@@ -11,8 +11,6 @@
         <span class="text-xl font-bold text-pink-700 tracking-wide">Svelte-NET Demo</span>
       </div>
       <div class="flex items-center space-x-6">
-        <a href="/" class="text-blue-600 hover:text-pink-600 font-medium transition-colors">Home</a>
-        <a href="/fetchdata" class="text-blue-600 hover:text-pink-600 font-medium transition-colors">Fetch Data</a>
         <a
           href="https://docs.microsoft.com/aspnet/"
           target="_blank"

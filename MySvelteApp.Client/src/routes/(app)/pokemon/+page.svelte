@@ -1,87 +1,108 @@
 <script lang="ts">
-  import { getRandomPokemon } from '$api/schema/sdk.gen';
+  import { getRandomPokemonApi } from './data.remote';
   import type { RandomPokemon } from '$api/schema/types.gen';
-  import { onMount } from 'svelte';
+  import * as Card from '$lib/components/ui/card';
+  import { Button } from '$lib/components/ui/button';
+  import { Badge } from '$lib/components/ui/badge';
+  import * as Alert from '$lib/components/ui/alert';
+  import RefreshCw from '@lucide/svelte/icons/refresh-cw';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
+  import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
 
-  let pokemonPromise = $state<Promise<any> | null>(null);
-  let imageLoaded = $state(false);
-  let imageError = $state(false);
+  let pokemonPromise = $state(getRandomPokemonApi());
+  let isRefreshing = $state(false);
 
-  onMount(() => {
-    pokemonPromise = getRandomPokemon();
-  });
-
-  function refreshPokemon() {
-    pokemonPromise = getRandomPokemon();
-    imageLoaded = false;
-    imageError = false;
-  }
-
-  function onImageLoad() {
-    imageLoaded = true;
-    imageError = false;
-  }
-
-  function onImageError() {
-    imageLoaded = false;
-    imageError = true;
+  async function refreshPokemon() {
+    isRefreshing = true;
+    try {
+      // Use the remote function's refresh method to trigger a new network request
+      await pokemonPromise.refresh();
+    } catch (error) {
+      console.error('Failed to refresh Pokemon:', error);
+    } finally {
+      isRefreshing = false;
+    }
   }
 </script>
 
-<button
-  class="mb-8 px-6 py-2 rounded-full bg-pink-500 hover:bg-pink-600 text-white font-semibold shadow transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-  onclick={refreshPokemon}
->
-  🔄 Refresh
-</button>
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-2xl mx-auto space-y-6">
+    <!-- Header Section -->
+    <div class="text-center space-y-2">
+      <h1 class="text-3xl font-bold">Random Pokémon</h1>
+      <p class="text-muted-foreground">Discover a new Pokémon every time you click refresh!</p>
+    </div>
 
-<svelte:boundary>
-  <div class="flex flex-col items-center justify-center min-h-[60vh]">
-    <h1 class="text-3xl md:text-4xl font-extrabold mb-2 text-pink-700 drop-shadow">Random Pokémon</h1>
-    <p class="mb-6 text-lg text-gray-700">Discover a new Pokémon every time you click refresh!</p>
+    <!-- Button Section -->
+    <div class="flex justify-center">
+      <Button
+        onclick={refreshPokemon}
+        disabled={isRefreshing}
+        variant="default"
+        size="lg"
+      >
+        {#if isRefreshing}
+          <RefreshCw class="mr-2 h-4 w-4 animate-spin" />
+          Refreshing...
+        {:else}
+          <Sparkles class="mr-2 h-4 w-4" />
+          Get New Pokémon
+        {/if}
+      </Button>
+    </div>
 
-    <div>
-      {#if pokemonPromise}
+    <!-- Content Section -->
+    <div class="flex justify-center">
+      <svelte:boundary>
         {#await pokemonPromise}
-          <div class="flex items-center justify-center h-64 w-80 bg-white bg-opacity-80 rounded-2xl shadow-lg animate-pulse">
-            <p class="text-xl text-gray-500">Loading...</p>
-          </div>
-        {:then response}
-          <div class="w-80 bg-white bg-opacity-90 rounded-3xl shadow-2xl flex flex-col items-center p-8 transition-all">
-            {#if !imageLoaded && !imageError}
-              <div class="w-40 h-40 mb-4 flex items-center justify-center">
-                <div class="animate-pulse w-16 h-16 rounded-full bg-pink-200"></div>
+          <!-- Loading State -->
+          <Card.Root class="w-full max-w-sm">
+            <Card.Content class="flex flex-col items-center justify-center py-12">
+              <RefreshCw class="h-8 w-8 animate-spin mb-4" />
+              <p class="text-lg font-medium">Loading...</p>
+            </Card.Content>
+          </Card.Root>
+        {:then pokemon}
+          <!-- Success State -->
+          <Card.Root class="w-full max-w-sm">
+            <Card.Content class="flex flex-col items-center space-y-6 py-8">
+              <img
+                src={pokemon.image}
+                alt={pokemon.name}
+                class="w-48 h-48 object-contain"
+                width="200"
+                height="200"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+              />
+              <div class="text-center space-y-2">
+                <h2 class="text-2xl font-bold">
+                  {pokemon.name?.toUpperCase()}
+                </h2>
+                {#if pokemon.type}
+                  <Badge variant="secondary">
+                    {pokemon.type?.toUpperCase()}
+                  </Badge>
+                {/if}
               </div>
-            {/if}
-            <img
-              src={response.data?.image}
-              alt={response.data?.name}
-              class="w-40 h-40 object-contain mb-4 drop-shadow-lg rounded-full border-4 border-pink-200 bg-pink-50 transition-opacity duration-300 ease-in-out"
-              class:opacity-0={!imageLoaded && !imageError}
-              class:opacity-100={imageLoaded}
-              width="200"
-              height="200"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-              onload={onImageLoad}
-              onerror={onImageError}
-            />
-            <h2 class="text-2xl font-bold text-blue-700 mb-2 tracking-wide">{response.data?.name?.toUpperCase()}</h2>
-            <p class="text-lg font-medium text-pink-600 mb-2">{response.data?.type?.toUpperCase()}</p>
-          </div>
+            </Card.Content>
+          </Card.Root>
         {:catch error}
-          <div class="flex items-center justify-center h-64 w-80 bg-white bg-opacity-80 rounded-2xl shadow-lg">
-            <p class="text-red-600 font-semibold text-center">
-              Failed to load Pokémon: {error instanceof Error ? error.message : String(error)}
-            </p>
-          </div>
+          <!-- Error State -->
+          <Card.Root class="w-full max-w-sm">
+            <Card.Content class="py-6">
+              <Alert.Root variant="destructive">
+                <AlertTriangle class="h-4 w-4" />
+                <Alert.Title>Oops! Something went wrong</Alert.Title>
+                <Alert.Description>
+                  Failed to load Pokémon: {error instanceof Error ? error.message : String(error)}
+                </Alert.Description>
+              </Alert.Root>
+            </Card.Content>
+          </Card.Root>
         {/await}
-      {:else}
-        <div class="flex items-center justify-center h-64 w-80 bg-white bg-opacity-80 rounded-2xl shadow-lg">
-          <p class="text-xl text-gray-500">Loading...</p>
-        </div>
-      {/if}
+      </svelte:boundary>
     </div>
   </div>
-</svelte:boundary>
+</div>
