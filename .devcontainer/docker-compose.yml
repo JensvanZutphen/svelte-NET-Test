@@ -1,0 +1,97 @@
+# no 'version:' key; compose v2 ignores it and warns
+volumes:
+  pgdata:
+  loki-data:
+  grafana-data:
+
+services:
+  # Dev container that Cursor/VS Code attaches to
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    depends_on:
+      - api
+      - web
+      - db
+      - loki
+      - grafana
+
+  # ASP.NET Core API (runs as your host uid:gid to keep files writable)
+  api:
+    build:
+      context: ..
+      dockerfile: MySvelteApp.Server/Dockerfile.dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:7216
+      - ConnectionStrings__DefaultConnection=Host=db;Database=app;Username=postgres;Password=postgres
+    user: "1000:1000"
+    volumes:
+      - ../MySvelteApp.Server:/src
+    ports:
+      - "7216:7216"
+    depends_on:
+      - db
+
+  # Svelte dev server (also run as your uid:gid)
+  web:
+    build:
+      context: ../MySvelteApp.Client
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=docker-dev
+      - PUBLIC_API_ENDPOINT=http://api:7216
+      - VITE_API_URL=http://api:7216
+    user: "1000:1000"
+    volumes:
+      - ../MySvelteApp.Client:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+  # Postgres for local dev
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Loki for app logs (not as docker logging driver)
+  loki:
+    image: grafana/loki:3.4.1
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+
+  # Grafana
+  grafana:
+    image: grafana/grafana-oss:latest
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - loki
+      - db

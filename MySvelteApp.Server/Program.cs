@@ -18,7 +18,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(WebsiteClientOrigin, policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173") // Explicitly allow the client origin
+            .WithOrigins("http://localhost:5173", "http://localhost:3000", "http://web:3000", "http://localhost:5173") // Allow multiple origins
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials(); // Allow credentials to be sent

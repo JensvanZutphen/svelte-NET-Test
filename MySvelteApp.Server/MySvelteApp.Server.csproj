@@ -7,7 +7,7 @@
     <RootNamespace>MySvelteApp.Server</RootNamespace>
     <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
 
-    <SpaRoot>..\MySvelteApp.Client</SpaRoot>
+    <SpaRoot>../MySvelteApp.Client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>http://localhost:5173</SpaProxyServerUrl>
   </PropertyGroup>
