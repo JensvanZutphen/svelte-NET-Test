@@ -8,7 +8,7 @@
   import RefreshCw from '@lucide/svelte/icons/refresh-cw';
   import Sparkles from '@lucide/svelte/icons/sparkles';
   import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
-
+  import { Label } from '$lib/components/ui/label';
   let pokemonPromise = $state(getRandomPokemonApi());
   let isRefreshing = $state(false);
 
@@ -29,8 +29,8 @@
   <div class="max-w-2xl mx-auto space-y-6">
     <!-- Header Section -->
     <div class="text-center space-y-2">
-      <h1 class="text-3xl font-bold">Random Pokémon</h1>
-      <p class="text-muted-foreground">Discover a new Pokémon every time you click refresh!</p>
+      <Label class="text-2xl font-bold">Random Pokémon</Label>
+      <Label class="text-lg font-medium">Discover a new Pokémon every time you click refresh!</Label>
     </div>
 
     <!-- Button Section -->
@@ -59,7 +59,7 @@
           <Card.Root class="w-full max-w-sm">
             <Card.Content class="flex flex-col items-center justify-center py-12">
               <RefreshCw class="h-8 w-8 animate-spin mb-4" />
-              <p class="text-lg font-medium">Loading...</p>
+              <Label class="text-lg font-medium">Loading...</Label>
             </Card.Content>
           </Card.Root>
         {:then pokemon}

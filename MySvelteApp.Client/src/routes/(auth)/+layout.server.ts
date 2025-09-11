@@ -11,3 +11,4 @@ export const load = (async ({ cookies }) => {
         throw redirect(302, '/pokemon');
     }
 }) satisfies LayoutServerLoad;
+    
