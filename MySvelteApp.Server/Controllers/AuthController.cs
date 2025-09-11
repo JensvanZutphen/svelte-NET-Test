@@ -6,8 +6,22 @@ using MySvelteApp.Server.Services;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.OpenApi.Models;
 
 namespace MySvelteApp.Server.Controllers;
+
+// Response types for OpenAPI documentation
+public class AuthSuccessResponse
+{
+    public string Token { get; set; } = string.Empty;
+    public int UserId { get; set; }
+    public string Username { get; set; } = string.Empty;
+}
+
+public class AuthErrorResponse
+{
+    public string Message { get; set; } = string.Empty;
+}
 
 [ApiController]
 [Route("[controller]")]
@@ -24,6 +38,8 @@ public class AuthController : ControllerBase
 
     [HttpPost("register")]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(AuthSuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuthErrorResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
         // Validate input
@@ -65,7 +81,8 @@ public class AuthController : ControllerBase
         {
             Username = model.Username.Trim(),
             Email = model.Email.Trim().ToLower(),
-            PasswordHash = Convert.ToBase64String(passwordHash)
+            PasswordHash = Convert.ToBase64String(passwordHash),
+            PasswordSalt = Convert.ToBase64String(passwordSalt)
         };
 
         _context.Users.Add(user);
@@ -77,6 +94,9 @@ public class AuthController : ControllerBase
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(AuthSuccessResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuthErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(AuthErrorResponse), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
         // Validate input
@@ -90,7 +110,7 @@ public class AuthController : ControllerBase
         if (user == null)
             return Unauthorized(new { message = "Invalid username or password. Please check your credentials and try again." });
 
-        if (!VerifyPasswordHash(model.Password, Convert.FromBase64String(user.PasswordHash)))
+        if (!VerifyPasswordHash(model.Password, Convert.FromBase64String(user.PasswordHash), Convert.FromBase64String(user.PasswordSalt)))
             return Unauthorized(new { message = "Invalid username or password. Please check your credentials and try again." });
 
         var token = _jwtService.GenerateToken(user.Id.ToString(), user.Username);
@@ -106,9 +126,9 @@ public class AuthController : ControllerBase
         }
     }
 
-    private bool VerifyPasswordHash(string password, byte[] storedHash)
+    private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
     {
-        using (var hmac = new HMACSHA512())
+        using (var hmac = new HMACSHA512(storedSalt))
         {
             var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
             return computedHash.SequenceEqual(storedHash);

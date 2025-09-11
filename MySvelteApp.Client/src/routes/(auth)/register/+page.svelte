@@ -1,218 +1,126 @@
 <script lang="ts">
-  import { register } from './auth.remote';
-  import { goto } from '$app/navigation';
-
-  // Form state with runes
-  let username = $state('');
-  let email = $state('');
-  let password = $state('');
-  let confirmPassword = $state('');
-  let isLoading = $state(false);
-  let fieldErrors = $state({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-
-  // Validate fields
-  const validateField = (field: keyof typeof fieldErrors, value: string) => {
-    switch (field) {
-      case 'username':
-        if (!value.trim()) {
-          fieldErrors.username = 'Username is required';
-        } else if (value.length < 3) {
-          fieldErrors.username = 'Username must be at least 3 characters';
-        } else if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-          fieldErrors.username = 'Username can only contain letters, numbers, and underscores';
-        } else {
-          fieldErrors.username = '';
-        }
-        break;
-      case 'email':
-        if (!value.trim()) {
-          fieldErrors.email = 'Email is required';
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          fieldErrors.email = 'Please enter a valid email address';
-        } else {
-          fieldErrors.email = '';
-        }
-        break;
-      case 'password':
-        if (!value) {
-          fieldErrors.password = 'Password is required';
-        } else if (value.length < 8) {
-          fieldErrors.password = 'Password must be at least 8 characters';
-        } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
-          fieldErrors.password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
-        } else {
-          fieldErrors.password = '';
-          // Re-validate confirm password when password changes
-          if (confirmPassword) {
-            validateField('confirmPassword', confirmPassword);
-          }
-        }
-        break;
-      case 'confirmPassword':
-        if (!value) {
-          fieldErrors.confirmPassword = 'Please confirm your password';
-        } else if (value !== password) {
-          fieldErrors.confirmPassword = 'Passwords do not match';
-        } else {
-          fieldErrors.confirmPassword = '';
-        }
-        break;
-    }
-  };
-
-  // Validate form before submission
-  const validateForm = () => {
-    // Validate all fields
-    validateField('username', username);
-    validateField('email', email);
-    validateField('password', password);
-    validateField('confirmPassword', confirmPassword);
-
-    // Check if there are any field errors
-    return !Object.values(fieldErrors).some(error => error !== '');
-  };
+	import { goto } from '$app/navigation';
+	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import { register } from '$lib/auth.remote';
+	
+	let isSubmitting = false;
+	let error = '';
+	let success = '';
 </script>
 
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-md w-full space-y-8">
-    <div>
-      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-        Sign up for an account
-      </h2>
-      <p class="mt-2 text-center text-sm text-gray-600">
-        Already have an account?
-        <a href="/login" class="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
-          Sign in
-        </a>
-      </p>
-    </div>
+<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+	<div class="max-w-md w-full space-y-8">
+		<div class="text-center">
+			<h2 class="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
+				Create your account
+			</h2>
+			<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+				Already have an account?
+				<a href="/login" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+					Sign in
+				</a>
+			</p>
+		</div>
 
-    <form {...register.enhance(async ({ form, submit }) => {
-      // Validate form before submission
-      if (!validateForm()) {
-        return; // Don't submit if validation fails
-      }
+		<Card>
+			<CardHeader class="space-y-1">
+				<CardTitle class="text-2xl font-bold text-center">Get started</CardTitle>
+				<CardDescription class="text-center">
+					Create a new account to access all features
+				</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<!-- Error and Success Messages -->
+				{#if error}
+					<div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+						{error}
+					</div>
+				{/if}
+				
+				{#if success}
+					<div class="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+						{success}
+					</div>
+				{/if}
+				
+				<form {...register.enhance(async ({ form, data, submit }) => {
+		error = '';
+		success = '';
+		isSubmitting = true;
+		
+		try {
+			const result = await submit();
+			success = 'Registration successful! Please log in.';
+			setTimeout(() => goto('/login'), 2000);
+		} catch (err: any) {
+			error = err.message || 'Registration failed. Please try again.';
+		} finally {
+			isSubmitting = false;
+		}
+	})} class="space-y-4">
+					<div class="space-y-2">
+						<Label for="name">Full name</Label>
+						<Input
+							id="name"
+							name="name"
+							type="text"
+							placeholder="Enter your full name"
+							required
+						/>
+					</div>
 
-      isLoading = true;
-      try {
-        await submit();
-        // Check result after submission
-        if (register.result?.success) {
-          console.log('Registration successful, navigating to /pokemon');
-          await goto('/pokemon');
-        }
-      } catch (error) {
-        console.error('Registration error:', error);
-      } finally {
-        isLoading = false;
-      }
-    })} class="mt-8 space-y-6">
-      <!-- Server Error Message -->
-      {#if register.result?.error}
-        <div class="rounded-md bg-red-50 p-4 border border-red-200">
-          <div class="flex items-center">
-            <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-            </svg>
-            <span class="text-sm text-red-800">{register.result.error}</span>
-          </div>
-        </div>
-      {/if}
+					<div class="space-y-2">
+						<Label for="email">Email address</Label>
+						<Input
+							id="email"
+							name="email"
+							type="email"
+							placeholder="Enter your email"
+							required
+						/>
+					</div>
 
-      <div class="space-y-4">
-        <!-- Username Field -->
-        <div>
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            bind:value={username}
-            oninput={(e) => validateField('username', (e.target as HTMLInputElement)?.value || '')}
-            class="appearance-none relative block w-full px-3 py-3 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors
-              {fieldErrors.username ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}"
-            disabled={isLoading}
-          />
-          {#if fieldErrors.username}
-            <p class="mt-1 text-sm text-red-600">{fieldErrors.username}</p>
-          {/if}
-        </div>
+					<div class="space-y-2">
+						<Label for="password">Password</Label>
+						<Input
+							id="password"
+							name="password"
+							type="password"
+							placeholder="Create a password"
+							required
+						/>
+					</div>
 
-        <!-- Email Field -->
-        <div>
-          <input
-            type="email"
-            name="email"
-            placeholder="Email address"
-            bind:value={email}
-            oninput={(e) => validateField('email', (e.target as HTMLInputElement)?.value || '')}
-            class="appearance-none relative block w-full px-3 py-3 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors
-              {fieldErrors.email ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}"
-            disabled={isLoading}
-          />
-          {#if fieldErrors.email}
-            <p class="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
-          {/if}
-        </div>
+					<div class="space-y-2">
+						<Label for="confirmPassword">Confirm password</Label>
+						<Input
+							id="confirmPassword"
+							name="confirmPassword"
+							type="password"
+							placeholder="Confirm your password"
+							required
+						/>
+					</div>
 
-        <!-- Password Field -->
-        <div>
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            bind:value={password}
-            oninput={(e) => validateField('password', (e.target as HTMLInputElement)?.value || '')}
-            class="appearance-none relative block w-full px-3 py-3 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors
-              {fieldErrors.password ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}"
-            disabled={isLoading}
-          />
-          {#if fieldErrors.password}
-            <p class="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
-          {:else}
-            <p class="mt-1 text-xs text-gray-500">Password must be at least 8 characters with uppercase, lowercase, and numbers</p>
-          {/if}
-        </div>
+					<Button type="submit" class="w-full" disabled={isSubmitting}>
+						{isSubmitting ? 'Creating account...' : 'Create account'}
+					</Button>
 
-        <!-- Confirm Password Field -->
-        <div>
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm password"
-            bind:value={confirmPassword}
-            oninput={(e) => validateField('confirmPassword', (e.target as HTMLInputElement)?.value || '')}
-            class="appearance-none relative block w-full px-3 py-3 border placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors
-              {fieldErrors.confirmPassword ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}"
-            disabled={isLoading}
-          />
-          {#if fieldErrors.confirmPassword}
-            <p class="mt-1 text-sm text-red-600">{fieldErrors.confirmPassword}</p>
-          {/if}
-        </div>
-      </div>
-
-      <button
-        type="submit"
-        disabled={isLoading}
-        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-      >
-        {#if isLoading}
-          <div class="flex items-center">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Creating account...
-          </div>
-        {:else}
-          Sign up
-        {/if}
-      </button>
-    </form>
-  </div>
+					<div class="text-center text-xs text-gray-500 dark:text-gray-400">
+						By creating an account, you agree to our
+						<a href="/terms" class="text-blue-600 hover:text-blue-500 dark:text-blue-400">
+							Terms of Service
+						</a>
+						and
+						<a href="/privacy" class="text-blue-600 hover:text-blue-500 dark:text-blue-400">
+							Privacy Policy
+						</a>
+					</div>
+				</form>
+			</CardContent>
+		</Card>
+	</div>
 </div>
