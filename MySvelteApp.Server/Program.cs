@@ -6,6 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using MySvelteApp.Server.Services;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,13 +44,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    // Make authentication required by default for all endpoints
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
-        .Build();
-});
+        .Build());
 
 builder.Services.AddControllers(options =>
 {
@@ -87,6 +87,31 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 builder.Services.AddHttpClient();
+
+var serviceName = builder.Configuration["OTEL_SERVICE_NAME"] ?? "my-svelteapp-api";
+var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://jaeger:4317";
+var otlpProtocol = builder.Configuration["OTEL_EXPORTER_OTLP_PROTOCOL"];
+
+builder.Services.AddOpenTelemetry().WithTracing(tracing =>
+{
+    tracing
+        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName))
+        .AddAspNetCoreInstrumentation(options =>
+        {
+            options.RecordException = true;
+        })
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri(otlpEndpoint);
+
+            if (!string.IsNullOrWhiteSpace(otlpProtocol) &&
+                string.Equals(otlpProtocol, "http/protobuf", StringComparison.OrdinalIgnoreCase))
+            {
+                options.Protocol = OtlpExportProtocol.HttpProtobuf;
+            }
+        });
+});
 
 // Add Entity Framework
 builder.Services.AddDbContext<AppDbContext>(options =>

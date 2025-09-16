@@ -12,6 +12,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ..:/workspace:cached
+      - /var/run/docker.sock:/var/run/docker.sock
     command: sleep infinity
     depends_on:
       - api
@@ -19,6 +20,7 @@ services:
       - db
       - loki
       - grafana
+      - jaeger
 
   # ASP.NET Core API (runs as your host uid:gid to keep files writable)
   api:
@@ -29,31 +31,41 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:7216
       - ConnectionStrings__DefaultConnection=Host=db;Database=app;Username=postgres;Password=postgres
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - OTEL_SERVICE_NAME=my-svelteapp-api
     user: "1000:1000"
     volumes:
       - ../MySvelteApp.Server:/src
     ports:
-      - "7216:7216"
+      - target: 7216
+        published: "0"
+        protocol: tcp
     depends_on:
       - db
+      - jaeger
 
   # Svelte dev server (also run as your uid:gid)
   web:
     build:
       context: ../MySvelteApp.Client
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     environment:
       - NODE_ENV=docker-dev
       - PUBLIC_API_ENDPOINT=http://api:7216
       - VITE_API_URL=http://api:7216
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - OTEL_SERVICE_NAME=my-sveltekit-client
     user: "1000:1000"
     volumes:
       - ../MySvelteApp.Client:/app
       - /app/node_modules
     ports:
-      - "5173:5173"
+      - target: 5173
+        published: "0"
+        protocol: tcp
     depends_on:
       - api
+      - jaeger
 
   # Postgres for local dev
   db:
@@ -65,7 +77,9 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - target: 5432
+        published: "0"
+        protocol: tcp
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
       interval: 5s
@@ -80,7 +94,9 @@ services:
       - ./loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
       - loki-data:/loki
     ports:
-      - "3100:3100"
+      - target: 3100
+        published: "0"
+        protocol: tcp
 
   # Grafana
   grafana:
@@ -91,7 +107,25 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
     ports:
-      - "3000:3000"
+      - target: 3000
+        published: "0"
+        protocol: tcp
     depends_on:
       - loki
       - db
+      - jaeger
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - target: 16686
+        published: "0"
+        protocol: tcp
+      - target: 4317
+        published: "0"
+        protocol: tcp
+      - target: 4318
+        published: "0"
+        protocol: tcp

@@ -7,9 +7,14 @@ import { register } from 'node:module';
 const { registerOptions } = createAddHookMessageChannel();
 register('import-in-the-middle/hook.mjs', import.meta.url, registerOptions);
 
+const defaultExporterEndpoint = 'http://jaeger:4318/v1/traces';
+const traceExporter = new OTLPTraceExporter({
+	url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? defaultExporterEndpoint
+});
+
 const sdk = new NodeSDK({
-	serviceName: 'test-sveltekit-tracing',
-	traceExporter: new OTLPTraceExporter(),
+	serviceName: process.env.OTEL_SERVICE_NAME ?? 'my-sveltekit-client',
+	traceExporter,
 	instrumentations: [getNodeAutoInstrumentations()]
 });
 
