@@ -7,7 +7,9 @@ import { register } from 'node:module';
 const { registerOptions } = createAddHookMessageChannel();
 register('import-in-the-middle/hook.mjs', import.meta.url, registerOptions);
 
-const defaultExporterEndpoint = 'http://jaeger:4318/v1/traces';
+// When running SvelteKit directly in the devcontainer (not the compose network),
+// point to Jaeger via the host-published collector port.
+const defaultExporterEndpoint = 'http://localhost:4318/v1/traces';
 const traceExporter = new OTLPTraceExporter({
 	url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? defaultExporterEndpoint
 });

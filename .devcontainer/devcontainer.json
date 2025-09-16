@@ -4,14 +4,15 @@
   "service": "app",
   "workspaceFolder": "/workspace",
 
-  "runServices": ["api", "web", "db", "loki", "grafana"],
+  "runServices": ["api", "web", "db", "loki", "grafana", "jaeger", "promtail"],
 
-  "forwardPorts": [5173, 7216, 5432, 3100, 3000],
+  "forwardPorts": [5173, 7216, 5432, 3000, 3100, 16686],
   "portsAttributes": {
-    "5173": { "label": "Svelte Client", "onAutoForward": "openPreview" },
+    "5173": { "label": "Svelte Client", "onAutoForward": "openBrowser" },
     "7216": { "label": "ASP.NET Core API", "onAutoForward": "openBrowser" },
     "3000": { "label": "Grafana", "onAutoForward": "openBrowser" },
-    "3100": { "label": "Loki HTTP", "onAutoForward": "openBrowser" }
+    "3100": { "label": "Loki HTTP", "onAutoForward": "openBrowser" },
+    "16686": { "label": "Jaeger UI", "onAutoForward": "openBrowser" }
   },
 
   "features": {
@@ -21,7 +22,6 @@
     },
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
-
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],

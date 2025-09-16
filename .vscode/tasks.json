@@ -36,6 +36,90 @@
                 "${workspaceFolder}/svelte-NET-Test.sln"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "compose: start observability",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                ".devcontainer/docker-compose.yml",
+                "up",
+                "-d",
+                "db",
+                "loki",
+                "promtail",
+                "grafana",
+                "jaeger",
+                "web"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "compose: stop api",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                ".devcontainer/docker-compose.yml",
+                "stop",
+                "api"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "compose: start api",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                ".devcontainer/docker-compose.yml",
+                "up",
+                "-d",
+                "api"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "stack: prepare",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "compose: start observability",
+                "compose: stop api"
+            ]
+        },
+        {
+            "label": "compose: stop observability",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                ".devcontainer/docker-compose.yml",
+                "stop",
+                "web",
+                "api",
+                "grafana",
+                "loki",
+                "jaeger",
+                "db"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "compose: down observability",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                ".devcontainer/docker-compose.yml",
+                "down"
+            ],
+            "problemMatcher": []
         }
     ]
 }
