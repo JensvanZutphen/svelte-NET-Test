@@ -5,6 +5,8 @@
 	import { Home, Settings, User, Plus, ChevronUp } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { logout } from '$src/routes/(auth)/auth.remote';
+	import { goto } from '$app/navigation';
+
 	let { children } = $props();
 </script>
 
@@ -84,8 +86,22 @@
 								<DropdownMenu.Item>
 									<span>Billing</span>
 								</DropdownMenu.Item>
+								<DropdownMenu.Separator />
 								<DropdownMenu.Item>
-									<button type="button" onclick={() => logout()}>Sign out</button>
+									<button
+										type="button"
+										class="w-full text-left hover:bg-transparent"
+										onclick={async () => {
+											try {
+												await logout();
+												goto('/login');
+											} catch (error) {
+												console.error('Logout failed:', error);
+											}
+										}}
+									>
+										Sign out
+									</button>
 								</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
