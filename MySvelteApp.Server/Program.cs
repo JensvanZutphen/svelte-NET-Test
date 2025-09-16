@@ -9,6 +9,8 @@ using Microsoft.OpenApi.Models;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Serilog;
+using Serilog.Sinks.Grafana.Loki;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,9 +90,24 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Services.AddHttpClient();
 
-var serviceName = builder.Configuration["OTEL_SERVICE_NAME"] ?? "my-svelteapp-api";
-var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://jaeger:4317";
-var otlpProtocol = builder.Configuration["OTEL_EXPORTER_OTLP_PROTOCOL"];
+var promtailUrl = builder.Configuration["LOKI_PUSH_URL"] ?? "http://localhost:3101/loki/api/v1/push";
+var apiServiceName = builder.Configuration["OTEL_SERVICE_NAME"] ?? "mysvelteapp-api";
+var environmentName = builder.Environment.EnvironmentName ?? "Development";
+
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .MinimumLevel.Information()
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("service", apiServiceName)
+        .Enrich.WithProperty("env", environmentName.ToLowerInvariant())
+        .WriteTo.Console()
+        .WriteTo.GrafanaLoki(promtailUrl);
+});
+
+var serviceName = apiServiceName;
+var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:4318/v1/traces";
+var otlpProtocol = builder.Configuration["OTEL_EXPORTER_OTLP_PROTOCOL"] ?? "http/protobuf";
 
 builder.Services.AddOpenTelemetry().WithTracing(tracing =>
 {
@@ -104,12 +121,9 @@ builder.Services.AddOpenTelemetry().WithTracing(tracing =>
         .AddOtlpExporter(options =>
         {
             options.Endpoint = new Uri(otlpEndpoint);
-
-            if (!string.IsNullOrWhiteSpace(otlpProtocol) &&
-                string.Equals(otlpProtocol, "http/protobuf", StringComparison.OrdinalIgnoreCase))
-            {
-                options.Protocol = OtlpExportProtocol.HttpProtobuf;
-            }
+            options.Protocol = string.Equals(otlpProtocol, "grpc", StringComparison.OrdinalIgnoreCase)
+                ? OtlpExportProtocol.Grpc
+                : OtlpExportProtocol.HttpProtobuf;
         });
 });
 
@@ -132,6 +146,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseSerilogRequestLogging();
 
 // Add authentication and authorization middleware
 app.UseAuthentication();

@@ -62,9 +62,11 @@
 	"dependencies": {
 		"@hey-api/openapi-ts": "^0.83.1",
 		"@opentelemetry/auto-instrumentations-node": "^0.53.0",
-		"@opentelemetry/exporter-trace-otlp-proto": "^0.53.0",
+		"@opentelemetry/exporter-trace-otlp-http": "^0.53.0",
 		"@opentelemetry/sdk-node": "^0.53.0",
 		"import-in-the-middle": "^1.7.2",
+		"pino": "^9.5.0",
+		"pino-loki": "^2.3.0",
 		"zod": "^4.1.7"
 	}
 }
