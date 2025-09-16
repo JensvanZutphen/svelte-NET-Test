@@ -30,7 +30,7 @@ export const AuthSuccessResponseSchema = {
     additionalProperties: false
 } as const;
 
-export const LoginModelSchema = {
+export const LoginRequestSchema = {
     type: 'object',
     properties: {
         username: {
@@ -45,7 +45,7 @@ export const LoginModelSchema = {
     additionalProperties: false
 } as const;
 
-export const RandomPokemonSchema = {
+export const RandomPokemonDtoSchema = {
     type: 'object',
     properties: {
         name: {
@@ -64,7 +64,7 @@ export const RandomPokemonSchema = {
     additionalProperties: false
 } as const;
 
-export const RegisterModelSchema = {
+export const RegisterRequestSchema = {
     type: 'object',
     properties: {
         username: {
@@ -83,7 +83,7 @@ export const RegisterModelSchema = {
     additionalProperties: false
 } as const;
 
-export const WeatherForecastSchema = {
+export const WeatherForecastDtoSchema = {
     type: 'object',
     properties: {
         date: {
@@ -107,7 +107,7 @@ export const WeatherForecastSchema = {
     additionalProperties: false
 } as const;
 
-export const WeatherForecastWritableSchema = {
+export const WeatherForecastDtoWritableSchema = {
     type: 'object',
     properties: {
         date: {

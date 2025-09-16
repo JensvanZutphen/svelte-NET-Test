@@ -10,38 +10,38 @@ export type AuthSuccessResponse = {
     username?: string | null;
 };
 
-export type LoginModel = {
+export type LoginRequest = {
     username?: string | null;
     password?: string | null;
 };
 
-export type RandomPokemon = {
+export type RandomPokemonDto = {
     name?: string | null;
     type?: string | null;
     image?: string | null;
 };
 
-export type RegisterModel = {
+export type RegisterRequest = {
     username?: string | null;
     email?: string | null;
     password?: string | null;
 };
 
-export type WeatherForecast = {
+export type WeatherForecastDto = {
     date?: string;
     temperatureC?: number;
     summary?: string | null;
     readonly temperatureF?: number;
 };
 
-export type WeatherForecastWritable = {
+export type WeatherForecastDtoWritable = {
     date?: string;
     temperatureC?: number;
     summary?: string | null;
 };
 
 export type PostAuthRegisterData = {
-    body?: RegisterModel;
+    body?: RegisterRequest;
     path?: never;
     query?: never;
     url: '/Auth/register';
@@ -66,7 +66,7 @@ export type PostAuthRegisterResponses = {
 export type PostAuthRegisterResponse = PostAuthRegisterResponses[keyof PostAuthRegisterResponses];
 
 export type PostAuthLoginData = {
-    body?: LoginModel;
+    body?: LoginRequest;
     path?: never;
     query?: never;
     url: '/Auth/login';
@@ -105,7 +105,7 @@ export type GetRandomPokemonResponses = {
     /**
      * OK
      */
-    200: RandomPokemon;
+    200: RandomPokemonDto;
 };
 
 export type GetRandomPokemonResponse = GetRandomPokemonResponses[keyof GetRandomPokemonResponses];
@@ -135,7 +135,7 @@ export type GetWeatherForecastResponses = {
     /**
      * OK
      */
-    200: Array<WeatherForecast>;
+    200: Array<WeatherForecastDto>;
 };
 
 export type GetWeatherForecastResponse = GetWeatherForecastResponses[keyof GetWeatherForecastResponses];

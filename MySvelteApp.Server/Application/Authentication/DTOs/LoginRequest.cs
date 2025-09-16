@@ -1,7 +1,7 @@
-namespace MySvelteApp.Server.Models.Auth;
+namespace MySvelteApp.Server.Application.Authentication.DTOs;
 
-public class LoginModel
+public class LoginRequest
 {
     public string Username { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
-} 
+}

@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { register } from '$lib/auth.remote';
+	import { register } from '$src/routes/(auth)/auth.remote';
 	
 	let isSubmitting = false;
 	let error = '';
@@ -62,12 +62,12 @@
 		}
 	})} class="space-y-4">
 					<div class="space-y-2">
-						<Label for="name">Full name</Label>
+						<Label for="username">Username</Label>
 						<Input
-							id="name"
-							name="name"
+							id="username"
+							name="username"
 							type="text"
-							placeholder="Enter your full name"
+							placeholder="Enter your username"
 							required
 						/>
 					</div>

@@ -4,7 +4,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Home, Settings, User, Plus, ChevronUp } from '@lucide/svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	
+	import { logout } from '$src/routes/(auth)/auth.remote';
 	let { children } = $props();
 </script>
 
@@ -85,7 +85,7 @@
 									<span>Billing</span>
 								</DropdownMenu.Item>
 								<DropdownMenu.Item>
-									<span>Sign out</span>
+									<button type="button" onclick={() => logout()}>Sign out</button>
 								</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>

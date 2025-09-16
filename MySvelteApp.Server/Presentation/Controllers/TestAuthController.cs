@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using MySvelteApp.Server.Models;
 
-namespace MySvelteApp.Server.Controllers;
+namespace MySvelteApp.Server.Presentation.Controllers;
 
 [ApiController]
 [Route("[controller]")]
@@ -12,4 +11,4 @@ public class TestAuthController : ControllerBase
     {
         return Ok(new { Message = "If you can see this, you are authenticated!" });
     }
-} 
+}

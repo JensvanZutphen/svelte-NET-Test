@@ -1,11 +1,19 @@
-using Microsoft.EntityFrameworkCore;
-using MySvelteApp.Server.Data;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using MySvelteApp.Server.Services;
 using Microsoft.OpenApi.Models;
+using MySvelteApp.Server.Application.Authentication;
+using MySvelteApp.Server.Application.Common.Interfaces;
+using MySvelteApp.Server.Application.Pokemon;
+using MySvelteApp.Server.Application.Weather;
+using MySvelteApp.Server.Infrastructure.Authentication;
+using MySvelteApp.Server.Infrastructure.External;
+using MySvelteApp.Server.Infrastructure.Persistence;
+using MySvelteApp.Server.Infrastructure.Persistence.Repositories;
+using MySvelteApp.Server.Infrastructure.Security;
+using MySvelteApp.Server.Infrastructure.Weather;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -14,23 +22,20 @@ using Serilog.Sinks.Grafana.Loki;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1) Define CORS policy name
 const string WebsiteClientOrigin = "website_client";
 
-// 2) Configure CORS to allow your actual client URL
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(WebsiteClientOrigin, policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173", "http://localhost:3000", "http://web:3000", "http://localhost:5173") // Allow multiple origins
+            .WithOrigins("http://localhost:5173", "http://localhost:3000", "http://web:3000", "http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials(); // Allow credentials to be sent
+            .AllowCredentials();
     });
 });
 
-// Add JWT authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -51,28 +56,22 @@ builder.Services.AddAuthorizationBuilder()
         .RequireAuthenticatedUser()
         .Build());
 
-builder.Services.AddControllers(options =>
-{
-    // Require authorization for all controllers by default
-    // Remove this if you want to opt-in to authorization instead
-    // options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter());
-});
+builder.Services.AddControllers();
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "MySvelteApp.Server", Version = "v1" });
 
-    // 1) Define the Bearer auth scheme
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = SecuritySchemeType.Http,          // HTTP auth
-        Scheme = "bearer",                       // Bearer scheme
-        BearerFormat = "JWT",                    // Optional, for docs
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
         In = ParameterLocation.Header,
         Description = "Enter 'Bearer <token>'"
     });
 
-    // 2) Apply it globally as a requirement
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -88,13 +87,12 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-builder.Services.AddHttpClient();
 
 var promtailUrl = builder.Configuration["LOKI_PUSH_URL"] ?? "http://localhost:3101/loki/api/v1/push";
 var apiServiceName = builder.Configuration["OTEL_SERVICE_NAME"] ?? "mysvelteapp-api";
 var environmentName = builder.Environment.EnvironmentName ?? "Development";
 
-builder.Host.UseSerilog((context, services, configuration) =>
+builder.Host.UseSerilog((_, _, configuration) =>
 {
     configuration
         .MinimumLevel.Information()
@@ -113,10 +111,7 @@ builder.Services.AddOpenTelemetry().WithTracing(tracing =>
 {
     tracing
         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName))
-        .AddAspNetCoreInstrumentation(options =>
-        {
-            options.RecordException = true;
-        })
+        .AddAspNetCoreInstrumentation(options => { options.RecordException = true; })
         .AddHttpClientInstrumentation()
         .AddOtlpExporter(options =>
         {
@@ -127,16 +122,18 @@ builder.Services.AddOpenTelemetry().WithTracing(tracing =>
         });
 });
 
-// Add Entity Framework
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("MySvelteAppDb")); // Using in-memory database for simplicity
+    options.UseInMemoryDatabase("MySvelteAppDb"));
 
-// Register services
-builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddHttpClient<IRandomPokemonService, PokeApiRandomPokemonService>();
+builder.Services.AddSingleton<IWeatherForecastService, WeatherForecastService>();
 
 var app = builder.Build();
 
-// 3) Register CORS middleware before controllers
 app.UseCors(WebsiteClientOrigin);
 
 if (app.Environment.IsDevelopment())
@@ -146,12 +143,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseSerilogRequestLogging();
-
-// Add authentication and authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 app.Run();

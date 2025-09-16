@@ -2,22 +2,22 @@ import { form, command, query } from '$app/server';
 import { getRequestEvent } from '$app/server';
 import { error } from '@sveltejs/kit';
 import { postAuthLogin, postAuthRegister, getTestAuth } from '$api/schema/sdk.gen';
-import { 
-	zLoginModel, 
-	zRegisterModel, 
+import {
+	zLoginRequest,
+	zRegisterRequest,
 	zAuthErrorResponse,
 } from '$api/schema/zod.gen';
-import type { LoginModel, RegisterModel } from '$api/schema/types.gen';
+import type { LoginRequest, RegisterRequest } from '$api/schema/types.gen';
 
 // Login form handler with automatic validation
 export const login = form(async (data) => {
 	// Validate form data with Zod
-	const formData: LoginModel = {
+	const formData: LoginRequest = {
 		username: data.get('username') as string,
 		password: data.get('password') as string,
 	};
 
-	const validationResult = zLoginModel.safeParse(formData);
+	const validationResult = zLoginRequest.safeParse(formData);
 	if (!validationResult.success) {
 		error(400, 'Invalid login data');
 	}
@@ -60,21 +60,21 @@ export const login = form(async (data) => {
 
 // Registration form handler with automatic validation
 export const register = form(async (data) => {
-	
+
 	// Validate passwords match
 	const confirmPassword = data.get('confirmPassword');
 	if (!confirmPassword || confirmPassword !== data.get('password')) {
 		error(400, 'Passwords do not match');
 	}
-	
+
 	// Validate form data with Zod
-	const formData: RegisterModel = {
-		username: data.get('name') as string,
+	const formData: RegisterRequest = {
+		username: data.get('username') as string,
 		email: data.get('email') as string,
 		password: data.get('password') as string,
 	};
-	
-	const validationResult = zRegisterModel.safeParse(formData);
+
+	const validationResult = zRegisterRequest.safeParse(formData);
 	if (!validationResult.success) {
 		error(400, 'Invalid registration data');
 	}
@@ -117,27 +117,32 @@ export const logout = command(async () => {
 // Get current user query
 export const getCurrentUser = query(async () => {
 	const { cookies } = getRequestEvent();
-	
+
 	const token = cookies.get('auth_token');
 	if (!token) {
 		error(401, 'Not authenticated');
 	}
-	
-	// Use generated client to validate token; ThrowOnError for cleaner flow
-	await getTestAuth({
-		headers: {
-			'Authorization': `Bearer ${token}`
-		},
-		throwOnError: true as const
-	});
-	
-	// Return a mock user since the test auth doesn't return user details
-	return { 
-		id: 'user123', 
-		email: 'user@example.com', 
-		name: 'Test User',
-		token 
-	};
+
+	// Validate token with backend using generated TestAuth client
+	try {
+		const response = await getTestAuth({
+			headers: {
+				'Authorization': `Bearer ${token}`
+			},
+			throwOnError: true as const
+		});
+
+		// Return a mock user since the test auth doesn't return user details
+		return {
+			id: 'user123',
+			email: 'user@example.com',
+			name: 'Test User',
+			token
+		};
+	} catch (err) {
+		console.error('Token validation error:', err);
+		error(401, 'Authentication failed');
+	}
 });
 
 // Check if user is authenticated

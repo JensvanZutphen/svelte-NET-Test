@@ -21,7 +21,7 @@ export const zAuthSuccessResponse = z.object({
     ]))
 });
 
-export const zLoginModel = z.object({
+export const zLoginRequest = z.object({
     username: z.optional(z.union([
         z.string(),
         z.null()
@@ -32,7 +32,7 @@ export const zLoginModel = z.object({
     ]))
 });
 
-export const zRandomPokemon = z.object({
+export const zRandomPokemonDto = z.object({
     name: z.optional(z.union([
         z.string(),
         z.null()
@@ -47,7 +47,7 @@ export const zRandomPokemon = z.object({
     ]))
 });
 
-export const zRegisterModel = z.object({
+export const zRegisterRequest = z.object({
     username: z.optional(z.union([
         z.string(),
         z.null()
@@ -62,7 +62,7 @@ export const zRegisterModel = z.object({
     ]))
 });
 
-export const zWeatherForecast = z.object({
+export const zWeatherForecastDto = z.object({
     date: z.optional(z.iso.date()),
     temperatureC: z.optional(z.int()),
     summary: z.optional(z.union([
@@ -72,7 +72,7 @@ export const zWeatherForecast = z.object({
     temperatureF: z.optional(z.int().readonly())
 });
 
-export const zWeatherForecastWritable = z.object({
+export const zWeatherForecastDtoWritable = z.object({
     date: z.optional(z.iso.date()),
     temperatureC: z.optional(z.int()),
     summary: z.optional(z.union([
@@ -82,7 +82,7 @@ export const zWeatherForecastWritable = z.object({
 });
 
 export const zPostAuthRegisterData = z.object({
-    body: z.optional(zRegisterModel),
+    body: z.optional(zRegisterRequest),
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
@@ -93,7 +93,7 @@ export const zPostAuthRegisterData = z.object({
 export const zPostAuthRegisterResponse = zAuthSuccessResponse;
 
 export const zPostAuthLoginData = z.object({
-    body: z.optional(zLoginModel),
+    body: z.optional(zLoginRequest),
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
@@ -112,7 +112,7 @@ export const zGetRandomPokemonData = z.object({
 /**
  * OK
  */
-export const zGetRandomPokemonResponse = zRandomPokemon;
+export const zGetRandomPokemonResponse = zRandomPokemonDto;
 
 export const zGetTestAuthData = z.object({
     body: z.optional(z.never()),
@@ -129,4 +129,4 @@ export const zGetWeatherForecastData = z.object({
 /**
  * OK
  */
-export const zGetWeatherForecastResponse = z.array(zWeatherForecast);
+export const zGetWeatherForecastResponse = z.array(zWeatherForecastDto);
