@@ -2,22 +2,28 @@ import { form, command, query } from '$app/server';
 import { getRequestEvent } from '$app/server';
 import { error } from '@sveltejs/kit';
 import { postAuthLogin, postAuthRegister, getTestAuth } from '$api/schema/sdk.gen';
-import {
-	zLoginRequest,
-	zRegisterRequest,
-	zAuthErrorResponse,
-} from '$api/schema/zod.gen';
-import type { LoginRequest, RegisterRequest } from '$api/schema/types.gen';
+import { zAuthErrorResponse } from '$api/schema/zod.gen';
+import { z } from 'zod';
+
+// Stricter UI-side validation schemas for immediate feedback
+const zLoginForm = z.object({
+	username: z.string().trim().min(1, 'Username is required'),
+	password: z.string().min(1, 'Password is required'),
+});
+
+const zRegisterForm = z.object({
+	username: z.string().trim().min(1, 'Username is required'),
+	email: z.string().email('Valid email required'),
+	password: z.string().min(8, 'Password must be at least 8 characters'),
+});
 
 // Login form handler with automatic validation
 export const login = form(async (data) => {
-	// Validate form data with Zod
-	const formData: LoginRequest = {
-		username: data.get('username') as string,
-		password: data.get('password') as string,
-	};
-
-	const validationResult = zLoginRequest.safeParse(formData);
+	// Validate form data with stricter UI schema
+	const validationResult = zLoginForm.safeParse({
+		username: data.get('username'),
+		password: data.get('password'),
+	});
 	if (!validationResult.success) {
 		error(400, 'Invalid login data');
 	}
@@ -47,13 +53,10 @@ export const login = form(async (data) => {
 		return result;
 	} catch (err) {
 		console.error('Login error:', err);
-		if (err instanceof Error) {
-			const parsed = zAuthErrorResponse.safeParse((err as unknown) as object);
-			const message = parsed.success && parsed.data.message ? parsed.data.message : err.message;
-			error(401, message);
-		}
 		const parsed = zAuthErrorResponse.safeParse(err);
-		const message = parsed.success && parsed.data.message ? parsed.data.message : 'Network error. Please check your connection and try again.';
+		const message = parsed.success && parsed.data.message
+			? parsed.data.message
+			: (err instanceof Error ? err.message : 'Network error. Please check your connection and try again.');
 		error(401, message);
 	}
 });
@@ -67,14 +70,12 @@ export const register = form(async (data) => {
 		error(400, 'Passwords do not match');
 	}
 
-	// Validate form data with Zod
-	const formData: RegisterRequest = {
-		username: data.get('username') as string,
-		email: data.get('email') as string,
-		password: data.get('password') as string,
-	};
-
-	const validationResult = zRegisterRequest.safeParse(formData);
+	// Validate form data with stricter UI schema
+	const validationResult = zRegisterForm.safeParse({
+		username: data.get('username'),
+		email: data.get('email'),
+		password: data.get('password'),
+	});
 	if (!validationResult.success) {
 		error(400, 'Invalid registration data');
 	}
@@ -93,13 +94,10 @@ export const register = form(async (data) => {
 		return result;
 	} catch (err) {
 		console.log('Registration catch error:', err);
-		if (err instanceof Error) {
-			const parsed = zAuthErrorResponse.safeParse((err as unknown) as object);
-			const message = parsed.success && parsed.data.message ? parsed.data.message : err.message;
-			error(400, message);
-		}
 		const parsed = zAuthErrorResponse.safeParse(err);
-		const message = parsed.success && parsed.data.message ? parsed.data.message : 'Registration failed';
+		const message = parsed.success && parsed.data.message
+			? parsed.data.message
+			: (err instanceof Error ? err.message : 'Registration failed');
 		error(400, message);
 	}
 });
