@@ -10,11 +10,12 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { register } from '$src/routes/(auth)/auth.remote';
+	import { register, resolveAuthErrorMessage } from '$src/routes/(auth)/auth.remote';
 
-	let isSubmitting = false;
-	let error = '';
-	let success = '';
+	let error = $state<string | null>(null);
+	let success = $state<string | null>(null);
+
+	const DEFAULT_ERROR_MESSAGE = 'Registration failed. Please try again.';
 </script>
 
 <div
@@ -53,19 +54,16 @@
 				{/if}
 
 				<form
-					{...register.enhance(async ({ form, data, submit }) => {
-						error = '';
-						success = '';
-						isSubmitting = true;
+					{...register.enhance(async ({ submit }) => {
+						error = null;
+						success = null;
 
 						try {
-							const result = await submit();
+							await submit();
 							success = 'Registration successful! Please log in.';
 							setTimeout(() => goto('/login'), 2000);
-						} catch (err: any) {
-							error = err.message || 'Registration failed. Please try again.';
-						} finally {
-							isSubmitting = false;
+						} catch (err: unknown) {
+							error = resolveAuthErrorMessage(err, DEFAULT_ERROR_MESSAGE);
 						}
 					})}
 					class="space-y-4"
@@ -108,8 +106,8 @@
 						/>
 					</div>
 
-					<Button type="submit" class="w-full" disabled={isSubmitting}>
-						{isSubmitting ? 'Creating account...' : 'Create account'}
+					<Button type="submit" class="w-full" disabled={register.pending > 0}>
+						{register.pending > 0 ? 'Creating account...' : 'Create account'}
 					</Button>
 
 					<div class="text-center text-xs text-gray-500 dark:text-gray-400">

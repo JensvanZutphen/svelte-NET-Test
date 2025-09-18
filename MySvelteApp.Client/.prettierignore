@@ -7,3 +7,7 @@ bun.lockb
 
 # Miscellaneous
 /static/
+ 
+# Generated/OpenAPI and UI library (ignored by formatter)
+api/
+src/lib/components/ui/

@@ -1,9 +1,40 @@
 import { form, command, query } from '$app/server';
 import { getRequestEvent } from '$app/server';
-import { error } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
+import type { ActionFailure } from '@sveltejs/kit';
 import { postAuthLogin, postAuthRegister, getTestAuth } from '$api/schema/sdk.gen';
 import { zAuthErrorResponse } from '$api/schema/zod.gen';
 import { z } from 'zod';
+import type { AuthErrorResponse } from '$api/schema/types.gen';
+
+const extractAuthMessage = (payload: unknown): string | undefined => {
+	const parsed = zAuthErrorResponse.safeParse(payload);
+	if (!parsed.success) return undefined;
+	const message = parsed.data.message;
+	return typeof message === 'string' && message.trim().length > 0 ? message : undefined;
+};
+
+export const resolveAuthErrorMessage = (err: unknown, fallback: string): string => {
+	if (typeof err === 'object' && err !== null) {
+		if ('body' in err) {
+			const message = extractAuthMessage((err as { body?: unknown }).body);
+			if (message) return message;
+		}
+
+		if ('data' in err) {
+			const failure = err as ActionFailure<AuthErrorResponse>;
+			const message = extractAuthMessage(failure.data);
+			if (message) return message;
+		}
+	}
+
+	if (err instanceof Error) {
+		const message = err.message?.trim();
+		if (message) return message;
+	}
+
+	return fallback;
+};
 
 // Stricter UI-side validation schemas for immediate feedback
 const zLoginForm = z.object({
@@ -13,28 +44,44 @@ const zLoginForm = z.object({
 
 const zRegisterForm = z.object({
 	username: z.string().trim().min(1, 'Username is required'),
-	email: z.string().email('Valid email required'),
+	email: z.email('Valid email required'),
 	password: z.string().min(8, 'Password must be at least 8 characters')
 });
 
-// Login form handler with automatic validation
-export const login = form(async (data) => {
-	// Validate form data with stricter UI schema
-	const validationResult = zLoginForm.safeParse({
-		username: data.get('username'),
-		password: data.get('password')
+const zRegisterFormWithConfirm = zRegisterForm
+	.extend({
+		confirmPassword: z.string().min(1, 'Please confirm your password')
+	})
+	.superRefine((data, ctx) => {
+		if (data.password !== data.confirmPassword) {
+			ctx.addIssue({
+				code: 'custom',
+				message: 'Passwords do not match',
+				path: ['confirmPassword']
+			});
+		}
 	});
-	if (!validationResult.success) {
-		error(400, 'Invalid login data');
+
+const getString = (value: FormDataEntryValue | null) => (typeof value === 'string' ? value : '');
+
+// Login form handler with automatic validation
+export const login = form(async (formData) => {
+	const parsed = zLoginForm.safeParse({
+		username: getString(formData.get('username')),
+		password: getString(formData.get('password'))
+	});
+
+	if (!parsed.success) {
+		return fail(400, { message: 'Invalid login data' });
 	}
 
-	const loginData = validationResult.data;
+	const { username, password } = parsed.data;
 	const { cookies } = getRequestEvent();
 
 	try {
 		// Use generated API client with ThrowOnError for cleaner control flow
 		const response = await postAuthLogin({
-			body: loginData,
+			body: { username, password },
 			throwOnError: true as const
 		});
 
@@ -60,30 +107,26 @@ export const login = form(async (data) => {
 				: err instanceof Error
 					? err.message
 					: 'Network error. Please check your connection and try again.';
-		error(401, message);
+		return fail(401, { message });
 	}
 });
 
 // Registration form handler with automatic validation
-export const register = form(async (data) => {
-	// Validate passwords match
-	const confirmPassword = data.get('confirmPassword');
-	if (!confirmPassword || confirmPassword !== data.get('password')) {
-		error(400, 'Passwords do not match');
-	}
-
-	// Validate form data with stricter UI schema
-	const validationResult = zRegisterForm.safeParse({
-		username: data.get('username'),
-		email: data.get('email'),
-		password: data.get('password')
+export const register = form(async (formData) => {
+	const parsed = zRegisterFormWithConfirm.safeParse({
+		username: getString(formData.get('username')),
+		email: getString(formData.get('email')),
+		password: getString(formData.get('password')),
+		confirmPassword: getString(formData.get('confirmPassword'))
 	});
-	if (!validationResult.success) {
-		error(400, 'Invalid registration data');
+
+	if (!parsed.success) {
+		const message = parsed.error.issues[0]?.message ?? 'Invalid registration data';
+		return fail(400, { message });
 	}
 
-	const registerData = validationResult.data;
-
+	const { username, email, password } = parsed.data;
+	const registerData = { username, email, password };
 	try {
 		// Use generated API client with ThrowOnError
 		const response = await postAuthRegister({
@@ -103,7 +146,7 @@ export const register = form(async (data) => {
 				: err instanceof Error
 					? err.message
 					: 'Registration failed';
-		error(400, message);
+		return fail(400, { message });
 	}
 });
 
@@ -128,14 +171,12 @@ export const getCurrentUser = query(async () => {
 
 	// Validate token with backend using generated TestAuth client
 	try {
-		const response = await getTestAuth({
+		await getTestAuth({
 			headers: {
 				Authorization: `Bearer ${token}`
 			},
 			throwOnError: true as const
 		});
-
-		// Return a mock user since the test auth doesn't return user details
 		return {
 			id: 'user123',
 			email: 'user@example.com',
