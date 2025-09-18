@@ -6,6 +6,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { logout } from '$src/routes/(auth)/auth.remote';
 	import { goto } from '$app/navigation';
+	import { Toaster } from 'svelte-sonner';
 
 	let { children } = $props();
 </script>
@@ -20,7 +21,7 @@
 			<Sidebar.Header>
 				<h2 class="text-lg font-semibold">My App</h2>
 			</Sidebar.Header>
-			
+
 			<Sidebar.Content>
 				<Sidebar.Group>
 					<Sidebar.GroupLabel>Application</Sidebar.GroupLabel>
@@ -45,9 +46,9 @@
 						</Sidebar.Menu>
 					</Sidebar.GroupContent>
 				</Sidebar.Group>
-				
+
 				<Sidebar.Separator />
-				
+
 				<Sidebar.Group>
 					<Sidebar.GroupLabel>Settings</Sidebar.GroupLabel>
 					<Sidebar.GroupContent>
@@ -62,7 +63,7 @@
 					</Sidebar.GroupContent>
 				</Sidebar.Group>
 			</Sidebar.Content>
-			
+
 			<Sidebar.Footer>
 				<Sidebar.Menu>
 					<Sidebar.MenuItem>
@@ -76,10 +77,7 @@
 									<ChevronUp class="ml-auto" size={16} />
 								</Sidebar.MenuButton>
 							</DropdownMenu.Trigger>
-							<DropdownMenu.Content
-								side="top"
-								class="w-(--bits-dropdown-menu-anchor-width)"
-							>
+							<DropdownMenu.Content side="top" class="w-(--bits-dropdown-menu-anchor-width)">
 								<DropdownMenu.Item>
 									<span>Account</span>
 								</DropdownMenu.Item>
@@ -108,12 +106,12 @@
 					</Sidebar.MenuItem>
 				</Sidebar.Menu>
 			</Sidebar.Footer>
-			
+
 			<Sidebar.Rail />
 		</Sidebar.Root>
-		
+
 		<Sidebar.Inset>
-			<header class="flex h-12 items-center justify-between px-4 border-b">
+			<header class="flex h-12 items-center justify-between border-b px-4">
 				<Sidebar.Trigger />
 				<div class="flex items-center space-x-2">
 					<h1 class="text-xl font-semibold">Welcome</h1>
@@ -124,4 +122,5 @@
 			</main>
 		</Sidebar.Inset>
 	</div>
+	<Toaster />
 </Sidebar.Provider>

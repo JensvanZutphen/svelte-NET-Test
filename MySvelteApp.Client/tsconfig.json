@@ -5,6 +5,7 @@
 		"checkJs": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
+		"ignoreDeprecations": "none",
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"sourceMap": true,

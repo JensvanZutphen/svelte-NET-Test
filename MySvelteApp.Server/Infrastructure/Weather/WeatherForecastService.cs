@@ -16,16 +16,18 @@ public class WeatherForecastService : IWeatherForecastService
         "Balmy",
         "Hot",
         "Sweltering",
-        "Scorching"
+        "Scorching",
     };
 
     public IEnumerable<WeatherForecastDto> GetForecasts()
     {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecastDto
-        {
-            Date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(index)),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        });
+        return Enumerable
+            .Range(1, 5)
+            .Select(index => new WeatherForecastDto
+            {
+                Date = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(index)),
+                TemperatureC = Random.Shared.Next(-20, 55),
+                Summary = Summaries[Random.Shared.Next(Summaries.Length)],
+            });
     }
 }

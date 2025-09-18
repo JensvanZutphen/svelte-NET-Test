@@ -3,9 +3,9 @@ import { query } from '$app/server';
 import { getRandomPokemon } from '$api/schema/sdk.gen';
 
 export const getRandomPokemonData = query(async () => {
-    const response = await getRandomPokemon();
-    if (!response.data) {
-        throw new Error('Invalid response from getRandomPokemon');
-    }
-    return response.data;
+	const response = await getRandomPokemon();
+	if (!response.data) {
+		throw new Error('Invalid response from getRandomPokemon');
+	}
+	return response.data;
 });

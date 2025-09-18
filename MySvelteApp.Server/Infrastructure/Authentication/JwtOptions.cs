@@ -25,16 +25,18 @@ public static class JwtOptionsValidator
     public static ValidationResult ValidateKeyStrength(object? value, ValidationContext context)
     {
         var s = value as string ?? string.Empty;
-        byte[] bytes = DeriveKeyBytes(s);
+        var bytes = DeriveKeyBytes(s);
         return bytes.Length >= 32
             ? ValidationResult.Success!
             : new ValidationResult("Jwt:Key must be at least 32 bytes (256-bit) after decoding.");
     }
 
-    private static byte[] DeriveKeyBytes(string key) =>
-        key.StartsWith("base64:", StringComparison.Ordinal)
+    private static byte[] DeriveKeyBytes(string key)
+    {
+        return key.StartsWith("base64:", StringComparison.Ordinal)
             ? Convert.FromBase64String(key["base64:".Length..])
             : Encoding.UTF8.GetBytes(key);
+    }
 }
 
 public sealed class JwtOptions
@@ -45,11 +47,17 @@ public sealed class JwtOptions
     public string Key { get; set; } = string.Empty;
 
     [Required]
-    [CustomValidation(typeof(JwtOptionsValidator), nameof(JwtOptionsValidator.ValidateNotWhitespace))]
+    [CustomValidation(
+        typeof(JwtOptionsValidator),
+        nameof(JwtOptionsValidator.ValidateNotWhitespace)
+    )]
     public string Issuer { get; set; } = string.Empty;
 
     [Required]
-    [CustomValidation(typeof(JwtOptionsValidator), nameof(JwtOptionsValidator.ValidateNotWhitespace))]
+    [CustomValidation(
+        typeof(JwtOptionsValidator),
+        nameof(JwtOptionsValidator.ValidateNotWhitespace)
+    )]
     public string Audience { get; set; } = string.Empty;
 
     /// <summary>

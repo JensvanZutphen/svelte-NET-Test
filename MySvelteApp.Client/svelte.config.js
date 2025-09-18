@@ -18,12 +18,13 @@ const config = {
 			}
 		},
 		alias: {
-			'$api': 'api',
-			'$lib': 'src/lib',
-			'$src': 'src'
+			$api: 'api',
+			$lib: 'src/lib',
+			$src: 'src'
 		}
 	},
 	compilerOptions: {
+		runes: true,
 		experimental: {
 			async: true
 		}
