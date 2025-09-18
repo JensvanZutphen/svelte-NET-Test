@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -8,7 +9,7 @@ using MySvelteApp.Server.Domain.Entities;
 
 namespace MySvelteApp.Server.Infrastructure.Authentication;
 
-public class JwtTokenGenerator : IJwtTokenGenerator
+internal class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly JwtOptions _jwtOptions;
 
@@ -19,14 +20,21 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
     public string GenerateToken(User user)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
+        // Support base64-encoded keys
+        var key = _jwtOptions.Key;
+        var keyBytes = key.StartsWith("base64:", StringComparison.Ordinal)
+            ? Convert.FromBase64String(key["base64:".Length..])
+            : Encoding.UTF8.GetBytes(key);
+        var securityKey = new SymmetricSecurityKey(keyBytes);
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString(CultureInfo.InvariantCulture)),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString(CultureInfo.InvariantCulture)),
             new Claim(ClaimTypes.Name, user.Username),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Iat, EpochTime.GetIntDate(DateTime.UtcNow).ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64)
         };
 
         var token = new JwtSecurityToken(

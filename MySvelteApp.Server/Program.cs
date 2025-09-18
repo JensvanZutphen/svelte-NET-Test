@@ -44,22 +44,30 @@ builder.Services.AddCors(options =>
 builder.Services.AddOptions<JwtOptions>()
     .Bind(builder.Configuration.GetSection("Jwt"))
     .ValidateDataAnnotations()
-    .Validate(options => !string.IsNullOrWhiteSpace(options.Key) && options.Key.Length >= 32, "Jwt:Key must be at least 32 characters long.")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Key), "Jwt:Key cannot be blank/whitespace.")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Issuer), "Jwt:Issuer cannot be blank/whitespace.")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Audience), "Jwt:Audience cannot be blank/whitespace.")
     .ValidateOnStart();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddJwtBearer();
+
+builder.Services
+    .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtOptions>>((options, jwt) =>
     {
-        var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
+        var o = jwt.Value;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtOptions.Issuer,
-            ValidAudience = jwtOptions.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key))
+            ValidIssuer = o.Issuer,
+            ValidAudience = o.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(o.Key)),
+            // Optional hardening: stricter expiry validation
+            ClockSkew = TimeSpan.Zero
         };
     });
 
@@ -155,18 +163,7 @@ builder.Services.AddSingleton<IWeatherForecastService, WeatherForecastService>()
 
 var app = builder.Build();
 
-app.UseCors(WebsiteClientOrigin);
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-app.UseSerilogRequestLogging();
-
-// Global exception handling with ProblemDetails
+// Global exception handling with ProblemDetails - must be first middleware
 app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
@@ -188,8 +185,19 @@ app.UseExceptionHandler(errorApp =>
         }
     });
 });
+
+app.UseCors(WebsiteClientOrigin);
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health").AllowAnonymous();
 app.Run();
