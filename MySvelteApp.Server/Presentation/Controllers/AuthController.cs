@@ -24,17 +24,14 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
         var result = await _authService.RegisterAsync(request, cancellationToken);
-        if (!result.Success)
-        {
-            return ToErrorResponse(result);
-        }
-
-        return Ok(new AuthSuccessResponse
-        {
-            Token = result.Token ?? string.Empty,
-            UserId = result.UserId ?? 0,
-            Username = result.Username ?? string.Empty
-        });
+        return !result.Success
+            ? ToErrorResponse(result)
+            : Ok(new AuthSuccessResponse
+            {
+                Token = result.Token ?? string.Empty,
+                UserId = result.UserId ?? 0,
+                Username = result.Username ?? string.Empty
+            });
     }
 
     [HttpPost("login")]
@@ -45,17 +42,14 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
         var result = await _authService.LoginAsync(request, cancellationToken);
-        if (!result.Success)
-        {
-            return ToErrorResponse(result);
-        }
-
-        return Ok(new AuthSuccessResponse
-        {
-            Token = result.Token ?? string.Empty,
-            UserId = result.UserId ?? 0,
-            Username = result.Username ?? string.Empty
-        });
+        return !result.Success
+            ? ToErrorResponse(result)
+            : Ok(new AuthSuccessResponse
+            {
+                Token = result.Token ?? string.Empty,
+                UserId = result.UserId ?? 0,
+                Username = result.Username ?? string.Empty
+            });
     }
 
     private IActionResult ToErrorResponse(AuthResult result)

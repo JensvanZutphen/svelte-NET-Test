@@ -318,4 +318,27 @@ public class UserRepositoryTests : IDisposable
         await Assert.ThrowsAsync<DbUpdateException>(
             () => sqliteRepository.AddAsync(user2));
     }
+
+    [Fact]
+    public async Task AddAsync_WithDuplicateEmail_ShouldThrowDbUpdateException()
+    {
+        // Arrange - Use SQLite in-memory which enforces unique constraints
+        using var sqliteContext = TestHelper.CreateSqliteInMemoryDbContext();
+        var sqliteRepository = new UserRepository(sqliteContext);
+
+        var user1 = TestData.Users.ValidUser;
+        var user2 = new User
+        {
+            Username = "differentuser",
+            Email = user1.Email, // Same email
+            PasswordHash = "different_hash",
+            PasswordSalt = "different_salt"
+        };
+
+        await TestHelper.SeedUsersAsync(sqliteContext, user1);
+
+        // Act & Assert - Should throw due to unique constraint violation
+        await Assert.ThrowsAsync<DbUpdateException>(
+            () => sqliteRepository.AddAsync(user2));
+    }
 }

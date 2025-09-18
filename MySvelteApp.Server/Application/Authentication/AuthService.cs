@@ -11,6 +11,11 @@ public class AuthService : IAuthService
     private static readonly Regex EmailRegex = new("^(?!.*\\.\\.)[^\\s@]+@[^\\s@.]+\\.[^\\s@.]+$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex PasswordRegex = new("(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)", RegexOptions.Compiled);
 
+    // Max length constants that mirror EF persistence constraints
+    private const int MaxUsernameLength = 64;
+    private const int MaxEmailLength = 320;
+    private const int MaxPasswordLength = 512;
+
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
@@ -117,6 +122,11 @@ public class AuthService : IAuthService
             return ("Username must be at least 3 characters long.", AuthErrorType.Validation);
         }
 
+        if (username.Length > MaxUsernameLength)
+        {
+            return ($"Username must not exceed {MaxUsernameLength} characters.", AuthErrorType.Validation);
+        }
+
         if (!UsernameRegex.IsMatch(username))
         {
             return ("Username can only contain letters, numbers, and underscores.", AuthErrorType.Validation);
@@ -125,6 +135,11 @@ public class AuthService : IAuthService
         if (string.IsNullOrWhiteSpace(email))
         {
             return ("Email is required.", AuthErrorType.Validation);
+        }
+
+        if (email.Length > MaxEmailLength)
+        {
+            return ($"Email must not exceed {MaxEmailLength} characters.", AuthErrorType.Validation);
         }
 
         if (!EmailRegex.IsMatch(email))
@@ -142,28 +157,19 @@ public class AuthService : IAuthService
             return ("Password must be at least 8 characters long.", AuthErrorType.Validation);
         }
 
-        if (!PasswordRegex.IsMatch(request.Password))
-        {
-            return ("Password must contain at least one uppercase letter, one lowercase letter, and one number.", AuthErrorType.Validation);
-        }
-
-        return null;
+        return request.Password.Length > MaxPasswordLength
+            ? ((string Message, AuthErrorType Type)?)($"Password must not exceed {MaxPasswordLength} characters.", AuthErrorType.Validation)
+            : !PasswordRegex.IsMatch(request.Password)
+            ? ("Password must contain at least one uppercase letter, one lowercase letter, and one number.", AuthErrorType.Validation)
+            : null;
     }
 
     private static (string Message, AuthErrorType Type)? ValidateLoginRequest(LoginRequest request)
     {
         var username = request.Username?.Trim();
-        if (string.IsNullOrWhiteSpace(username))
-        {
-            return ("Username is required.", AuthErrorType.Validation);
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Password))
-        {
-            return ("Password is required.", AuthErrorType.Validation);
-        }
-
-        return null;
+        return string.IsNullOrWhiteSpace(username)
+            ? ((string Message, AuthErrorType Type)?)("Username is required.", AuthErrorType.Validation)
+            : string.IsNullOrWhiteSpace(request.Password) ? ("Password is required.", AuthErrorType.Validation) : null;
     }
 
     private static AuthResult CreateError(string message, AuthErrorType errorType)

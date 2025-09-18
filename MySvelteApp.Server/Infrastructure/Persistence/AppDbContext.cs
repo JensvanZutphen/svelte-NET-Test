@@ -18,20 +18,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         user.HasIndex(u => u.Username).IsUnique();
         user.HasIndex(u => u.Email).IsUnique();
 
-        // Align SQLite with case-insensitive email semantics
-        // This requires Microsoft.EntityFrameworkCore.Sqlite package
-        // Check if SQLite provider is available at runtime
+        // Align SQLite with case-insensitive email semantics and case-sensitive username
         if (Database.ProviderName?.Contains("Sqlite") == true)
         {
             try
             {
-                // Use reflection to avoid compile-time dependency on SQLite package
-                var propertyBuilder = user.Property(u => u.Email);
-                var useCollationMethod = propertyBuilder.GetType().GetMethod("UseCollation");
-                if (useCollationMethod is not null)
-                {
-                    useCollationMethod.Invoke(propertyBuilder, ["NOCASE"]);
-                }
+                // Use dynamic invocation to avoid compile-time dependency issues with UseCollation
+                dynamic emailProperty = user.Property(u => u.Email);
+                dynamic usernameProperty = user.Property(u => u.Username);
+
+                // Call UseCollation dynamically - this will work at runtime when SQLite provider is available
+                emailProperty.UseCollation("NOCASE");
+                usernameProperty.UseCollation("BINARY");
             }
             catch
             {

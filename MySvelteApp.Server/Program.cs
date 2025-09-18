@@ -28,17 +28,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 const string WebsiteClientOrigin = "website_client";
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(WebsiteClientOrigin, policy =>
-    {
-        policy
+builder.Services.AddCors(options => options.AddPolicy(WebsiteClientOrigin, policy => policy
             .WithOrigins("http://localhost:5173", "http://localhost:3000", "http://web:3000")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials();
-    });
-});
+            .AllowCredentials()));
 
 // Bind and validate JwtOptions
 builder.Services.AddOptions<JwtOptions>()
@@ -72,10 +66,12 @@ builder.Services
     });
 
 // Shared key derivation helper to prevent duplication
-static byte[] DeriveKeyBytes(string key) =>
-    key.StartsWith("base64:", StringComparison.Ordinal)
+static byte[] DeriveKeyBytes(string key)
+{
+    return key.StartsWith("base64:", StringComparison.Ordinal)
         ? Convert.FromBase64String(key["base64:".Length..])
         : Encoding.UTF8.GetBytes(key);
+}
 
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder()
@@ -127,26 +123,21 @@ var promtailUrl = builder.Configuration["LOKI_PUSH_URL"] ?? "http://localhost:31
 var apiServiceName = builder.Configuration["OTEL_SERVICE_NAME"] ?? "mysvelteapp-api";
 var environmentName = builder.Environment.EnvironmentName ?? "Development";
 
-builder.Host.UseSerilog((_, _, configuration) =>
-{
-    configuration
+builder.Host.UseSerilog((_, _, configuration) => configuration
         .MinimumLevel.Information()
         .Enrich.FromLogContext()
         .Enrich.WithProperty("service", apiServiceName)
         .Enrich.WithProperty("env", environmentName.ToLowerInvariant())
         .WriteTo.Console()
-        .WriteTo.GrafanaLoki(promtailUrl);
-});
+        .WriteTo.GrafanaLoki(promtailUrl));
 
 var serviceName = apiServiceName;
 var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:4318/v1/traces";
 var otlpProtocol = builder.Configuration["OTEL_EXPORTER_OTLP_PROTOCOL"] ?? "http/protobuf";
 
-builder.Services.AddOpenTelemetry().WithTracing(tracing =>
-{
-    tracing
+builder.Services.AddOpenTelemetry().WithTracing(tracing => tracing
         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName))
-        .AddAspNetCoreInstrumentation(options => { options.RecordException = true; })
+        .AddAspNetCoreInstrumentation(options => options.RecordException = true)
         .AddHttpClientInstrumentation()
         .AddOtlpExporter(options =>
         {
@@ -154,8 +145,7 @@ builder.Services.AddOpenTelemetry().WithTracing(tracing =>
             options.Protocol = string.Equals(otlpProtocol, "grpc", StringComparison.OrdinalIgnoreCase)
                 ? OtlpExportProtocol.Grpc
                 : OtlpExportProtocol.HttpProtobuf;
-        });
-});
+        }));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("MySvelteAppDb"));
@@ -170,9 +160,7 @@ builder.Services.AddSingleton<IWeatherForecastService, WeatherForecastService>()
 var app = builder.Build();
 
 // Global exception handling with ProblemDetails - must be first middleware
-app.UseExceptionHandler(errorApp =>
-{
-    errorApp.Run(async context =>
+app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
     {
         var exceptionHandler = context.Features.Get<IExceptionHandlerFeature>();
         if (exceptionHandler is not null)
@@ -189,8 +177,7 @@ app.UseExceptionHandler(errorApp =>
             context.Response.ContentType = "application/problem+json";
             await context.Response.WriteAsJsonAsync(problemDetails);
         }
-    });
-});
+    }));
 
 app.UseCors(WebsiteClientOrigin);
 

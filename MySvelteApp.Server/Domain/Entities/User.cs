@@ -17,6 +17,10 @@ public class User
             {
                 throw new ArgumentException("Username cannot be null or whitespace", nameof(value));
             }
+            if (value.Length > 64)
+            {
+                throw new ArgumentException("Username exceeds 64 characters.", nameof(value));
+            }
             _username = value;
         }
     }
@@ -30,7 +34,12 @@ public class User
             {
                 throw new ArgumentException("Email cannot be null or whitespace", nameof(value));
             }
-            _email = value.Trim().ToLowerInvariant();
+            var v = value.Trim().ToLowerInvariant();
+            if (v.Length > 320)
+            {
+                throw new ArgumentException("Email exceeds 320 characters.", nameof(value));
+            }
+            _email = v;
         }
     }
 

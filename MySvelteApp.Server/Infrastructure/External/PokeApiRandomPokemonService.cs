@@ -24,17 +24,14 @@ public class PokeApiRandomPokemonService : IRandomPokemonService
         pokemonResponse.EnsureSuccessStatusCode();
         await using var pokemonContent = await pokemonResponse.Content.ReadAsStreamAsync(cancellationToken);
         var pokeApi = await JsonSerializer.DeserializeAsync<PokeApiResponse>(pokemonContent, cancellationToken: cancellationToken);
-        if (pokeApi is null)
-        {
-            throw new InvalidOperationException("Failed to deserialize Pokemon data.");
-        }
-
-        return new RandomPokemonDto
-        {
-            Name = pokeApi.name,
-            Type = string.Join(", ", pokeApi.types.Select(t => t.type.name)),
-            Image = pokeApi.sprites.front_default
-        };
+        return pokeApi is null
+            ? throw new InvalidOperationException("Failed to deserialize Pokemon data.")
+            : new RandomPokemonDto
+            {
+                Name = pokeApi.name,
+                Type = string.Join(", ", pokeApi.types.Select(t => t.type.name)),
+                Image = pokeApi.sprites.front_default
+            };
     }
 
     private async Task<int> GetPokemonCountAsync(CancellationToken cancellationToken)

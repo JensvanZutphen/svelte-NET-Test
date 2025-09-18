@@ -112,8 +112,22 @@ public class JwtTokenGeneratorTests
     public void GenerateToken_WithDifferentUsers_ShouldHaveDifferentClaims()
     {
         // Arrange
-        var user1 = TestData.Users.ValidUser;
-        var user2 = TestData.Users.AnotherValidUser;
+        var user1 = new User
+        {
+            Id = 1,
+            Username = TestData.Users.ValidUser.Username,
+            Email = TestData.Users.ValidUser.Email,
+            PasswordHash = TestData.Users.ValidUser.PasswordHash,
+            PasswordSalt = TestData.Users.ValidUser.PasswordSalt
+        };
+        var user2 = new User
+        {
+            Id = 2,
+            Username = TestData.Users.AnotherValidUser.Username,
+            Email = TestData.Users.AnotherValidUser.Email,
+            PasswordHash = TestData.Users.AnotherValidUser.PasswordHash,
+            PasswordSalt = TestData.Users.AnotherValidUser.PasswordSalt
+        };
 
         // Act
         var token1 = _jwtTokenGenerator.GenerateToken(user1);

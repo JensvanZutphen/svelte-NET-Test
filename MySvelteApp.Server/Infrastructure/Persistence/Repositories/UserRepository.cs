@@ -25,8 +25,9 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken = default)
     {
-        var normalizedEmail = email.ToLowerInvariant();
-        return await _dbContext.Users.AsNoTracking().AnyAsync(u => u.Email.ToLower() == normalizedEmail, cancellationToken);
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        return await _dbContext.Users.AsNoTracking()
+            .AnyAsync(u => u.Email == normalizedEmail, cancellationToken);
     }
 
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)

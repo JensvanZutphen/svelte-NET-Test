@@ -9,7 +9,6 @@ public static class TestData
     {
         public static User ValidUser => new()
         {
-            Id = 1,
             Username = "testuser",
             Email = "test@example.com",
             PasswordHash = "hashed_password",
@@ -18,7 +17,6 @@ public static class TestData
 
         public static User AnotherValidUser => new()
         {
-            Id = 2,
             Username = "anotheruser",
             Email = "another@example.com",
             PasswordHash = "another_hash",

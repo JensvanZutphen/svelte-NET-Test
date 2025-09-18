@@ -38,8 +38,10 @@ public class JwtTokenGenerator(IOptions<JwtOptions> jwtOptions) : IJwtTokenGener
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private static byte[] DeriveKeyBytes(string key) =>
-        key.StartsWith("base64:", StringComparison.Ordinal)
+    private static byte[] DeriveKeyBytes(string key)
+    {
+        return key.StartsWith("base64:", StringComparison.Ordinal)
             ? Convert.FromBase64String(key["base64:".Length..])
             : Encoding.UTF8.GetBytes(key);
+    }
 }
