@@ -44,20 +44,20 @@ export default ts.config(
 				svelteConfig
 			}
 		},
-			rules: {
-				'deprecation/deprecation': 'error'
+		rules: {
+			'deprecation/deprecation': 'error'
+		}
+	},
+	{
+		files: ['src/**/*.{ts,tsx}'],
+		languageOptions: {
+			parserOptions: {
+				project: ['./tsconfig.json'],
+				tsconfigRootDir
 			}
 		},
-		{
-			files: ['src/**/*.{ts,tsx}'],
-			languageOptions: {
-				parserOptions: {
-					project: ['./tsconfig.json'],
-					tsconfigRootDir
-				}
-			},
-			rules: {
-				'deprecation/deprecation': 'error'
-			}
+		rules: {
+			'deprecation/deprecation': 'error'
+		}
 	}
 );
