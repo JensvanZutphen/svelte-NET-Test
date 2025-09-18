@@ -147,12 +147,9 @@ public class AuthService : IAuthService
             return ("Please enter a valid email address.", AuthErrorType.Validation);
         }
 
-        if (string.IsNullOrWhiteSpace(request.Password))
-        {
-            return ("Password is required.", AuthErrorType.Validation);
-        }
-
-        return request.Password.Length < 8
+        return string.IsNullOrWhiteSpace(request.Password)
+            ? ((string Message, AuthErrorType Type)?)("Password is required.", AuthErrorType.Validation)
+            : request.Password.Length < 8
             ? ((string Message, AuthErrorType Type)?)("Password must be at least 8 characters long.", AuthErrorType.Validation)
             : request.Password.Length > MaxPasswordLength
             ? ((string Message, AuthErrorType Type)?)($"Password must not exceed {MaxPasswordLength} characters.", AuthErrorType.Validation)
