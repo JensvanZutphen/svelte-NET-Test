@@ -36,18 +36,5 @@ public class LoginRequestTests
         request.Password.Should().Be(password);
     }
 
-    [Fact]
-    public void LoginRequest_ShouldAllowNullValues()
-    {
-        // Act
-        var request = new LoginRequest
-        {
-            Username = null!,
-            Password = null!
-        };
-
-        // Assert
-        request.Username.Should().BeNull();
-        request.Password.Should().BeNull();
-    }
+    // Null handling is validated via service validation tests; DTO remains non-nullable
 }

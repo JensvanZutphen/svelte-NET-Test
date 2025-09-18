@@ -25,6 +25,7 @@
       <Version>9.0.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
@@ -44,6 +45,8 @@
   <!-- Exclude test sources from the main web project compilation -->
   <ItemGroup>
     <Compile Remove="Tests/**/*.cs" />
+    <None Remove="Tests/**" />
+    <Content Remove="Tests/**" />
   </ItemGroup>
 
 </Project>

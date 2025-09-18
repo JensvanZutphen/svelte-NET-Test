@@ -3,19 +3,35 @@ using Microsoft.Extensions.Options;
 using MySvelteApp.Server.Domain.Entities;
 using MySvelteApp.Server.Infrastructure.Authentication;
 using MySvelteApp.Server.Infrastructure.Persistence;
-using MySvelteApp.Server.Tests.TestUtilities;
+using Microsoft.Data.Sqlite;
 
 namespace MySvelteApp.Server.Tests.TestUtilities;
 
 public static class TestHelper
 {
-    public static AppDbContext CreateInMemoryDbContext(string dbName = "TestDb")
+    public static AppDbContext CreateInMemoryDbContext(string? dbName = null)
     {
+        var databaseName = dbName ?? Guid.NewGuid().ToString();
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(dbName)
+            .UseInMemoryDatabase(databaseName)
             .Options;
 
         return new AppDbContext(options);
+    }
+
+    public static AppDbContext CreateSqliteInMemoryDbContext()
+    {
+        var connection = new SqliteConnection("Filename=:memory:");
+        connection.Open();
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+
+        var context = new AppDbContext(options);
+        context.Database.EnsureCreated();
+
+        return context;
     }
 
     public static IOptions<JwtOptions> CreateJwtOptions() =>
@@ -35,7 +51,6 @@ public static class TestHelper
 
     public static void ClearDatabase(AppDbContext context)
     {
-        context.Users.RemoveRange(context.Users);
-        context.SaveChanges();
+        context.Database.EnsureDeleted();
     }
 }

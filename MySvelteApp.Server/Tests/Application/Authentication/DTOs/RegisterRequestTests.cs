@@ -40,20 +40,4 @@ public class RegisterRequestTests
         request.Password.Should().Be(password);
     }
 
-    [Fact]
-    public void RegisterRequest_ShouldAllowNullValues()
-    {
-        // Act
-        var request = new RegisterRequest
-        {
-            Username = null!,
-            Email = null!,
-            Password = null!
-        };
-
-        // Assert
-        request.Username.Should().BeNull();
-        request.Email.Should().BeNull();
-        request.Password.Should().BeNull();
-    }
 }

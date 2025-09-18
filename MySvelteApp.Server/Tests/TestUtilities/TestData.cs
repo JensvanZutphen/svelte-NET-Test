@@ -87,5 +87,6 @@ public static class TestData
         public const string ValidIssuer = "TestIssuer";
         public const string ValidAudience = "TestAudience";
         public const int ValidLifetimeHours = 24;
+        public const string ValidPlainTextKey = "ThisIsAVeryLongPlainTextKeyThatIsDefinitelyLongerThan32CharactersForTesting";
     }
 }

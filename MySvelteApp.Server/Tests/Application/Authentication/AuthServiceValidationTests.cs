@@ -37,7 +37,7 @@ public class AuthServiceValidationTests
             return ("Email is required.", AuthErrorType.Validation);
         }
 
-        if (!System.Text.RegularExpressions.Regex.IsMatch(email, "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"))
+        if (!System.Text.RegularExpressions.Regex.IsMatch(email, "^(?!.*\\.\\.)[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"))
         {
             return ("Please enter a valid email address.", AuthErrorType.Validation);
         }
@@ -172,7 +172,6 @@ public class AuthServiceValidationTests
         [InlineData("user+tag@example.com")]
         [InlineData("123@example.com")]
         [InlineData("user@example.co.uk")]
-        [InlineData("user..user@example.com")]
         public void ValidateEmail_WithValidEmail_ShouldReturnNull(string email)
         {
             // Act
@@ -180,6 +179,15 @@ public class AuthServiceValidationTests
 
             // Assert
             result.Should().BeNull();
+        }
+        
+        [Theory]
+        [InlineData("user..user@example.com")]
+        public void ValidateEmail_WithDoubleDotLocalPart_ShouldReturnValidationError(string email)
+        {
+            var result = ValidateEmail(email);
+            result.Should().NotBeNull();
+            result!.Value.Type.Should().Be(AuthErrorType.Validation);
         }
     }
 

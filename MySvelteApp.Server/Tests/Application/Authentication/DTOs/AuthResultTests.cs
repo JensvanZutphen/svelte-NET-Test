@@ -72,7 +72,7 @@ public class AuthResultTests
     }
 
     [Fact]
-    public void AuthResult_ShouldBeImmutable()
+    public void AuthResult_InitAssignments_ShouldPersistValues()
     {
         // Arrange
         var result = new AuthResult

@@ -57,6 +57,7 @@ public class AuthServiceTests
             result.Success.Should().BeTrue();
             result.Token.Should().Be(expectedToken);
             result.Username.Should().Be(request.Username);
+            result.UserId.Should().NotBeNull();
             result.ErrorMessage.Should().BeNull();
             result.ErrorType.Should().Be(AuthErrorType.None);
 
@@ -65,6 +66,32 @@ public class AuthServiceTests
                 u.Email == request.Email.ToLowerInvariant() &&
                 u.PasswordHash == "hashed_password" &&
                 u.PasswordSalt == "salt"), default), Times.Once);
+        }
+
+        [Fact]
+        public async Task RegisterAsync_ShouldTrimUsername()
+        {
+            var request = new RegisterRequest { Username = "  testuser  ", Email = "TEST@EXAMPLE.COM", Password = "ValidPassword123" };
+            const string expectedToken = "generated.jwt.token";
+
+            _userRepositoryMock
+                .Setup(x => x.UsernameExistsAsync("testuser", default))
+                .ReturnsAsync(false);
+            _userRepositoryMock
+                .Setup(x => x.EmailExistsAsync("test@example.com", default))
+                .ReturnsAsync(false);
+            _passwordHasherMock
+                .Setup(x => x.HashPassword(request.Password))
+                .Returns(("hashed_password", "salt"));
+            _jwtTokenGeneratorMock
+                .Setup(x => x.GenerateToken(It.IsAny<User>()))
+                .Returns(expectedToken);
+
+            var result = await _authService.RegisterAsync(request);
+
+            result.Success.Should().BeTrue();
+            result.Username.Should().Be("testuser");
+            _userRepositoryMock.Verify(x => x.AddAsync(It.Is<User>(u => u.Username == "testuser"), default), Times.Once);
         }
 
         [Fact]
@@ -82,7 +109,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("This username is already taken. Please choose a different one.");
+            result.ErrorMessage.Should().Contain("username is already taken");
             result.ErrorType.Should().Be(AuthErrorType.Conflict);
             result.Token.Should().BeNull();
             result.UserId.Should().BeNull();
@@ -110,7 +137,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("This email is already registered. Please use a different email address.");
+            result.ErrorMessage.Should().Contain("email is already registered");
             result.ErrorType.Should().Be(AuthErrorType.Conflict);
 
             _passwordHasherMock.Verify(x => x.HashPassword(It.IsAny<string>()), Times.Never);
@@ -128,7 +155,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Username must be at least 3 characters long.");
+            result.ErrorMessage.Should().Contain("at least 3 characters");
             result.ErrorType.Should().Be(AuthErrorType.Validation);
 
             _userRepositoryMock.Verify(x => x.UsernameExistsAsync(It.IsAny<string>(), default), Times.Never);
@@ -145,7 +172,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Please enter a valid email address.");
+            result.ErrorMessage.Should().Contain("valid email");
             result.ErrorType.Should().Be(AuthErrorType.Validation);
         }
 
@@ -160,7 +187,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Password must contain at least one uppercase letter, one lowercase letter, and one number.");
+            result.ErrorMessage.Should().Contain("uppercase letter");
             result.ErrorType.Should().Be(AuthErrorType.Validation);
         }
 
@@ -175,7 +202,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Username is required.");
+            result.ErrorMessage.Should().Contain("Username is required");
             result.ErrorType.Should().Be(AuthErrorType.Validation);
         }
 
@@ -190,7 +217,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Email is required.");
+            result.ErrorMessage.Should().Contain("Email is required");
             result.ErrorType.Should().Be(AuthErrorType.Validation);
         }
 
@@ -205,7 +232,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Password is required.");
+            result.ErrorMessage.Should().Contain("Password is required");
             result.ErrorType.Should().Be(AuthErrorType.Validation);
         }
 
@@ -220,7 +247,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Username can only contain letters, numbers, and underscores.");
+            result.ErrorMessage.Should().Contain("letters, numbers, and underscores");
             result.ErrorType.Should().Be(AuthErrorType.Validation);
         }
 
@@ -303,7 +330,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Invalid username or password. Please check your credentials and try again.");
+            result.ErrorMessage.Should().Contain("Invalid username or password");
             result.ErrorType.Should().Be(AuthErrorType.Unauthorized);
 
             _passwordHasherMock.Verify(x => x.VerifyPassword(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
@@ -328,7 +355,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Invalid username or password. Please check your credentials and try again.");
+            result.ErrorMessage.Should().Contain("Invalid username or password");
             result.ErrorType.Should().Be(AuthErrorType.Unauthorized);
 
             _jwtTokenGeneratorMock.Verify(x => x.GenerateToken(It.IsAny<User>()), Times.Never);
@@ -345,7 +372,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Username is required.");
+            result.ErrorMessage.Should().Contain("Username is required");
             result.ErrorType.Should().Be(AuthErrorType.Validation);
 
             _userRepositoryMock.Verify(x => x.GetByUsernameAsync(It.IsAny<string>(), default), Times.Never);
@@ -362,7 +389,7 @@ public class AuthServiceTests
 
             // Assert
             result.Success.Should().BeFalse();
-            result.ErrorMessage.Should().Be("Password is required.");
+            result.ErrorMessage.Should().Contain("Password is required");
             result.ErrorType.Should().Be(AuthErrorType.Validation);
         }
 

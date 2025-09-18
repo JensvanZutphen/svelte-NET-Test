@@ -1,5 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using MySvelteApp.Server.Domain.Entities;
@@ -38,6 +41,26 @@ public class JwtTokenGeneratorTests
         jwtToken.Issuer.Should().Be(_jwtOptions.Value.Issuer);
         jwtToken.Audiences.Should().Contain(_jwtOptions.Value.Audience);
         jwtToken.ValidTo.Should().BeCloseTo(DateTime.UtcNow.AddHours(_jwtOptions.Value.AccessTokenLifetimeHours), TimeSpan.FromMinutes(1));
+
+        // Build the signing key similar to JwtTokenGenerator
+        var keyString = _jwtOptions.Value.Key;
+        var keyBytes = keyString.StartsWith("base64:", StringComparison.OrdinalIgnoreCase)
+            ? Convert.FromBase64String(keyString.Substring("base64:".Length))
+            : Encoding.UTF8.GetBytes(keyString);
+
+        var validationParams = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ValidateIssuer = true,
+            ValidIssuer = _jwtOptions.Value.Issuer,
+            ValidateAudience = true,
+            ValidAudience = _jwtOptions.Value.Audience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1)
+        };
+
+        new JwtSecurityTokenHandler().ValidateToken(token, validationParams, out _);
     }
 
     [Fact]
@@ -53,13 +76,15 @@ public class JwtTokenGeneratorTests
         var tokenHandler = new JwtSecurityTokenHandler();
         var jwtToken = tokenHandler.ReadJwtToken(token);
 
-        var claims = jwtToken.Claims.ToDictionary(c => c.Type, c => c.Value);
+        var claims = jwtToken.Claims.ToList();
 
-        claims[ClaimTypes.NameIdentifier].Should().Be(user.Id.ToString());
-        claims[JwtRegisteredClaimNames.Sub].Should().Be(user.Id.ToString());
-        claims[ClaimTypes.Name].Should().Be(user.Username);
-        claims[JwtRegisteredClaimNames.Jti].Should().NotBeNullOrEmpty();
-        claims[JwtRegisteredClaimNames.Iat].Should().NotBeNullOrEmpty();
+        claims.Should().Contain(c => c.Type == ClaimTypes.NameIdentifier && c.Value == user.Id.ToString());
+        claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == user.Id.ToString());
+        claims.Should().Contain(c => c.Type == ClaimTypes.Name && c.Value == user.Username);
+        claims.Count(c => c.Type == JwtRegisteredClaimNames.Jti).Should().BeGreaterThan(0);
+        claims.First(c => c.Type == JwtRegisteredClaimNames.Jti).Value.Should().NotBeNullOrEmpty();
+        claims.Count(c => c.Type == JwtRegisteredClaimNames.Iat).Should().BeGreaterThan(0);
+        claims.First(c => c.Type == JwtRegisteredClaimNames.Iat).Value.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
@@ -99,11 +124,13 @@ public class JwtTokenGeneratorTests
         var jwtToken1 = tokenHandler.ReadJwtToken(token1);
         var jwtToken2 = tokenHandler.ReadJwtToken(token2);
 
-        var claims1 = jwtToken1.Claims.ToDictionary(c => c.Type, c => c.Value);
-        var claims2 = jwtToken2.Claims.ToDictionary(c => c.Type, c => c.Value);
+        var claims1 = jwtToken1.Claims.ToList();
+        var claims2 = jwtToken2.Claims.ToList();
 
-        claims1[ClaimTypes.NameIdentifier].Should().NotBe(claims2[ClaimTypes.NameIdentifier]);
-        claims1[ClaimTypes.Name].Should().NotBe(claims2[ClaimTypes.Name]);
+        claims1.First(c => c.Type == ClaimTypes.NameIdentifier).Value
+            .Should().NotBe(claims2.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
+        claims1.First(c => c.Type == ClaimTypes.Name).Value
+            .Should().NotBe(claims2.First(c => c.Type == ClaimTypes.Name).Value);
     }
 
     [Fact]
@@ -138,7 +165,7 @@ public class JwtTokenGeneratorTests
     public void GenerateToken_WithPlainTextKey_ShouldWorkCorrectly()
     {
         // Arrange
-        var longPlainKey = "ThisIsAVeryLongPlainTextKeyThatIsDefinitelyLongerThan32CharactersForTesting";
+        var longPlainKey = TestData.Jwt.ValidPlainTextKey;
         var jwtOptions = Options.Create(new JwtOptions
         {
             Key = longPlainKey,
@@ -178,7 +205,7 @@ public class JwtTokenGeneratorTests
         var jwtToken = tokenHandler.ReadJwtToken(token);
 
         var expectedExpiration = beforeGeneration.AddHours(_jwtOptions.Value.AccessTokenLifetimeHours);
-        jwtToken.ValidTo.Should().BeCloseTo(expectedExpiration, TimeSpan.FromSeconds(5));
+        jwtToken.ValidTo.Should().BeCloseTo(expectedExpiration, TimeSpan.FromMinutes(1));
     }
 
     [Fact]

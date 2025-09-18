@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: |
+          package-lock.json
+          MySvelteApp.Client/package-lock.json
+
+    - name: Install root dependencies
+      run: npm ci
+
+    - name: Install client dependencies
+      run: npm ci --prefix MySvelteApp.Client
+
+    - name: Build client
+      run: npm run build --prefix MySvelteApp.Client
+
+    - name: Restore .NET dependencies
+      run: dotnet restore svelte-NET-Test.sln
+
+    - name: Build .NET solution
+      run: dotnet build svelte-NET-Test.sln --configuration Release --no-restore
+      # Note: Set SkipClientBuild=true environment variable to skip client build for faster test-only runs
+
+    - name: Run .NET tests
+      run: dotnet test svelte-NET-Test.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+    - name: Run client linting
+      run: npm run lint --prefix MySvelteApp.Client
+
+    - name: Run client type checking
+      run: npm run check --prefix MySvelteApp.Client
+
+    - name: Run client unit tests
+      run: npm run test:unit --prefix MySvelteApp.Client
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: |
+          **/test-results.trx
+          MySvelteApp.Client/playwright-report/
+          MySvelteApp.Client/test-results/

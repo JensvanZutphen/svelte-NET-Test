@@ -15,12 +15,14 @@ public class UserRepositoryTests : IDisposable
 
     public UserRepositoryTests()
     {
-        _dbContext = TestHelper.CreateInMemoryDbContext(Guid.NewGuid().ToString());
+        const string defaultDbName = "UserRepositoryTests_DefaultDb";
+        _dbContext = TestHelper.CreateInMemoryDbContext(defaultDbName);
         _userRepository = new UserRepository(_dbContext);
     }
 
     public void Dispose()
     {
+        _dbContext.Database.EnsureDeleted();
         _dbContext.Dispose();
     }
 
@@ -100,6 +102,20 @@ public class UserRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task UsernameExistsAsync_WithDifferentCase_ShouldReturnFalse()
+    {
+        // Arrange
+        var user = TestData.Users.ValidUser;
+        await TestHelper.SeedUsersAsync(_dbContext, user);
+
+        // Act
+        var result = await _userRepository.UsernameExistsAsync(user.Username.ToUpper());
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task EmailExistsAsync_WithExistingEmail_ShouldReturnTrue()
     {
         // Arrange
@@ -127,7 +143,7 @@ public class UserRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task EmailExistsAsync_WithCaseInsensitiveEmail_ShouldReturnTrue()
+    public async Task EmailExistsAsync_WithDifferentCaseEmail_ShouldReturnTrue()
     {
         // Arrange
         var user = TestData.Users.ValidUser;
@@ -139,7 +155,7 @@ public class UserRepositoryTests : IDisposable
         var result = await _userRepository.EmailExistsAsync(differentCaseEmail);
 
         // Assert
-        result.Should().BeFalse();
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -165,17 +181,29 @@ public class UserRepositoryTests : IDisposable
     public async Task AddAsync_ShouldSaveChangesToDatabase()
     {
         // Arrange
+        const string testDbName = "PersistenceTestDb";
         var newUser = TestData.Users.NewUser;
 
+        // Create a fresh context with a known database name for this test
+        using var testContext = TestHelper.CreateInMemoryDbContext(testDbName);
+        var testRepository = new UserRepository(testContext);
+
         // Act
-        await _userRepository.AddAsync(newUser);
+        await testRepository.AddAsync(newUser);
+        await testContext.SaveChangesAsync();
 
         // Assert
-        // Create a new context to ensure we're not getting cached data
-        using var newContext = TestHelper.CreateInMemoryDbContext("DifferentDb");
+        // First verify the user doesn't exist in a different database (isolation test)
+        using var differentContext = TestHelper.CreateInMemoryDbContext("DifferentDb");
+        var userInDifferentDb = await differentContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username);
+        userInDifferentDb.Should().BeNull(); // Should not exist in different database
 
-        var persistedUser = await newContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username);
-        persistedUser.Should().BeNull(); // Should not exist in different database
+        // Then verify the user exists in the same database (persistence test)
+        using var sameContext = TestHelper.CreateInMemoryDbContext(testDbName);
+        var persistedUser = await sameContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username);
+        persistedUser.Should().NotBeNull(); // Should exist in the same database
+        persistedUser!.Username.Should().Be(newUser.Username);
+        persistedUser.Email.Should().Be(newUser.Email);
     }
 
     [Fact]
@@ -269,9 +297,12 @@ public class UserRepositoryTests : IDisposable
     }
 
     [Fact]
-    public async Task AddAsync_WithDuplicateUsername_ShouldStillAddToDatabase()
+    public async Task AddAsync_WithDuplicateUsername_ShouldThrowDbUpdateException()
     {
-        // Arrange
+        // Arrange - Use SQLite in-memory which enforces unique constraints
+        using var sqliteContext = TestHelper.CreateSqliteInMemoryDbContext();
+        var sqliteRepository = new UserRepository(sqliteContext);
+
         var user1 = TestData.Users.ValidUser;
         var user2 = new User
         {
@@ -281,16 +312,10 @@ public class UserRepositoryTests : IDisposable
             PasswordSalt = "different_salt"
         };
 
-        await TestHelper.SeedUsersAsync(_dbContext, user1);
+        await TestHelper.SeedUsersAsync(sqliteContext, user1);
 
-        // Act - EF should handle this, but we're testing the repository method
-        await _userRepository.AddAsync(user2);
-
-        // Assert
-        var usersWithSameUsername = await _dbContext.Users
-            .Where(u => u.Username == user1.Username)
-            .ToListAsync();
-
-        usersWithSameUsername.Should().HaveCount(2);
+        // Act & Assert - Should throw due to unique constraint violation
+        await Assert.ThrowsAsync<DbUpdateException>(
+            () => sqliteRepository.AddAsync(user2));
     }
 }

@@ -19,6 +19,6 @@ public class PasswordHasher : IPasswordHasher
         using var hmac = new HMACSHA512(saltBytes);
         var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
         var storedHash = Convert.FromBase64String(hash);
-        return computedHash.SequenceEqual(storedHash);
+        return CryptographicOperations.FixedTimeEquals(computedHash, storedHash);
     }
 }

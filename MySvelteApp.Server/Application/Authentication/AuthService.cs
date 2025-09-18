@@ -8,7 +8,7 @@ namespace MySvelteApp.Server.Application.Authentication;
 public class AuthService : IAuthService
 {
     private static readonly Regex UsernameRegex = new("^[a-zA-Z0-9_]+$", RegexOptions.Compiled);
-    private static readonly Regex EmailRegex = new("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", RegexOptions.Compiled);
+    private static readonly Regex EmailRegex = new("^(?!.*\\.\\.)[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", RegexOptions.Compiled);
     private static readonly Regex PasswordRegex = new("(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)", RegexOptions.Compiled);
 
     private readonly IUserRepository _userRepository;
