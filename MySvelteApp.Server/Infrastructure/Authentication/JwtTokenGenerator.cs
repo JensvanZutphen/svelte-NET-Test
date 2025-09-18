@@ -9,7 +9,7 @@ using MySvelteApp.Server.Domain.Entities;
 
 namespace MySvelteApp.Server.Infrastructure.Authentication;
 
-internal class JwtTokenGenerator : IJwtTokenGenerator
+public class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly JwtOptions _jwtOptions;
 
