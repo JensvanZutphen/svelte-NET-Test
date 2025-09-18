@@ -65,12 +65,16 @@ public class AuthController : ControllerBase
     private IActionResult ToErrorResponse(AuthResult result)
     {
         var errorMessage = result.ErrorMessage ?? "An unknown error occurred.";
+        var errorResponse = new AuthErrorResponse
+        {
+            Message = errorMessage,
+            ErrorType = result.ErrorType,
+        };
+
         return result.ErrorType switch
         {
-            AuthErrorType.Unauthorized => Unauthorized(
-                new AuthErrorResponse { Message = errorMessage }
-            ),
-            _ => BadRequest(new AuthErrorResponse { Message = errorMessage }),
+            AuthErrorType.Unauthorized => Unauthorized(errorResponse),
+            _ => BadRequest(errorResponse),
         };
     }
 }

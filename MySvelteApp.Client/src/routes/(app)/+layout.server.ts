@@ -1,7 +1,12 @@
 // if the user is not authenticated, redirect to the login page
 import { redirect } from '@sveltejs/kit';
 import { logger } from '$lib/server/logger';
-import { getTestAuth } from '$api/schema/sdk.gen';
+import {
+	decodeJwt,
+	extractUserFromToken,
+	isTokenExpired,
+	isValidTokenFormat
+} from '$lib/utils/jwt';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ cookies }) => {
@@ -13,24 +18,31 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 		return redirect(302, '/login');
 	}
 
-	// Verify token with backend using generated TestAuth client
-	try {
-		await getTestAuth({
-			headers: {
-				Authorization: `Bearer ${token}`
-			},
-			throwOnError: true as const
-		});
+	// Validate token format
+	if (!isValidTokenFormat(token)) {
+		log.warn('Invalid token format, redirecting to login page');
+		cookies.delete('auth_token', { path: '/' });
+		return redirect(302, '/login');
+	}
 
-		// Since the TestAuth endpoint doesn't return user data, we'll return a basic user object
+	// Check if token is expired
+	if (isTokenExpired(token)) {
+		log.warn('Token expired, redirecting to login page');
+		cookies.delete('auth_token', { path: '/' });
+		return redirect(302, '/login');
+	}
+
+	// Extract user data from JWT
+	try {
+		const user = extractUserFromToken(token);
 		return {
 			user: {
-				id: 'authenticated',
-				name: 'User'
+				id: user.id,
+				name: user.username
 			}
 		};
 	} catch (error) {
-		log.error({ err: error }, 'Token validation failed, redirecting to login page');
+		log.error({ err: error }, 'Token decoding failed, redirecting to login page');
 		cookies.delete('auth_token', { path: '/' });
 		return redirect(302, '/login');
 	}

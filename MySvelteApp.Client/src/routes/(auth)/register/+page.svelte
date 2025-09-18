@@ -11,7 +11,8 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { register } from '$src/routes/(auth)/auth.remote';
-	import { resolveAuthErrorMessage } from '$lib/auth/error-messages';
+	import { resolveAuthError, getUserFriendlyMessage } from '$lib/auth/error-messages';
+	import { registerRateLimiter } from '$lib/utils/rate-limiting';
 
 	let error = $state<string | null>(null);
 	let success = $state<string | null>(null);
@@ -59,12 +60,29 @@
 						error = null;
 						success = null;
 
+						// Check rate limit before submitting
+						const limit = registerRateLimiter.checkLimit();
+						if (!limit.allowed) {
+							const resetTime = registerRateLimiter.getFormattedResetTime();
+							error = `Too many registration attempts. Please try again in ${resetTime}.`;
+							return;
+						}
+
 						try {
 							await submit();
+							// Clear rate limit attempts on successful registration
+							registerRateLimiter.clearAttempts();
 							success = 'Registration successful! Please log in.';
 							setTimeout(() => goto('/login'), 2000);
 						} catch (err: unknown) {
-							error = resolveAuthErrorMessage(err, DEFAULT_ERROR_MESSAGE);
+							const enhancedError = resolveAuthError(err, DEFAULT_ERROR_MESSAGE);
+
+							// Handle rate limiting errors specifically
+							if (enhancedError.statusCode === 429) {
+								error = 'Too many registration attempts. Please wait before trying again.';
+							} else {
+								error = getUserFriendlyMessage(enhancedError);
+							}
 						}
 					})}
 					class="space-y-4"

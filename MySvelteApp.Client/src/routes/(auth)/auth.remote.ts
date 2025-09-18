@@ -1,9 +1,10 @@
 import { form, command, query } from '$app/server';
 import { getRequestEvent } from '$app/server';
 import { error } from '@sveltejs/kit';
-import { postAuthLogin, postAuthRegister, getTestAuth } from '$api/schema/sdk.gen';
-import { zAuthErrorResponse } from '$api/schema/zod.gen';
+import { postAuthLogin, postAuthRegister } from '$api/schema/sdk.gen';
 import { z } from 'zod';
+import { extractUserFromToken, isTokenExpired, isValidTokenFormat } from '$lib/utils/jwt';
+import { resolveAuthError } from '$lib/auth/error-messages';
 
 // Stricter UI-side validation schemas for immediate feedback
 const zLoginForm = z.object({
@@ -69,14 +70,11 @@ export const login = form(async (formData) => {
 		return result;
 	} catch (err) {
 		console.error('Login error:', err);
-		const parsed = zAuthErrorResponse.safeParse(err);
-		const message =
-			parsed.success && parsed.data.message
-				? parsed.data.message
-				: err instanceof Error
-					? err.message
-					: 'Network error. Please check your connection and try again.';
-		throw error(401, { message });
+		const enhancedError = resolveAuthError(
+			err,
+			'Network error. Please check your connection and try again.'
+		);
+		throw error(enhancedError.statusCode || 401, { message: enhancedError.message });
 	}
 });
 
@@ -107,15 +105,9 @@ export const register = form(async (formData) => {
 
 		return result;
 	} catch (err) {
-		console.log('Registration catch error:', err);
-		const parsed = zAuthErrorResponse.safeParse(err);
-		const message =
-			parsed.success && parsed.data.message
-				? parsed.data.message
-				: err instanceof Error
-					? err.message
-					: 'Registration failed';
-		throw error(400, { message });
+		console.error('Registration error:', err);
+		const enhancedError = resolveAuthError(err, 'Registration failed');
+		throw error(enhancedError.statusCode || 400, { message: enhancedError.message });
 	}
 });
 
@@ -138,22 +130,29 @@ export const getCurrentUser = query(async () => {
 		error(401, 'Not authenticated');
 	}
 
-	// Validate token with backend using generated TestAuth client
+	// Validate token format
+	if (!isValidTokenFormat(token)) {
+		console.error('Invalid token format');
+		error(401, 'Authentication failed');
+	}
+
+	// Check if token is expired
+	if (isTokenExpired(token)) {
+		console.error('Token expired');
+		error(401, 'Authentication failed');
+	}
+
+	// Extract user data from JWT
 	try {
-		await getTestAuth({
-			headers: {
-				Authorization: `Bearer ${token}`
-			},
-			throwOnError: true as const
-		});
+		const user = extractUserFromToken(token);
 		return {
-			id: 'user123',
-			email: 'user@example.com',
-			name: 'Test User',
-			token
+			id: user.id,
+			username: user.username,
+			email: `${user.username}@example.com`, // Placeholder email since JWT doesn't include it
+			token: user.token
 		};
 	} catch (err) {
-		console.error('Token validation error:', err);
+		console.error('Token decoding error:', err);
 		error(401, 'Authentication failed');
 	}
 });
@@ -162,5 +161,15 @@ export const getCurrentUser = query(async () => {
 export const isAuthenticated = query(async () => {
 	const { cookies } = getRequestEvent();
 	const token = cookies.get('auth_token');
-	return !!token;
+
+	if (!token) {
+		return false;
+	}
+
+	// Validate token format and expiration
+	try {
+		return isValidTokenFormat(token) && !isTokenExpired(token);
+	} catch {
+		return false;
+	}
 });

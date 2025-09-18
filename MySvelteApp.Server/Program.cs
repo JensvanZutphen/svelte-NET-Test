@@ -1,14 +1,17 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MySvelteApp.Server.Application.Authentication;
+using MySvelteApp.Server.Application.Authentication.DTOs;
 using MySvelteApp.Server.Application.Common.Interfaces;
 using MySvelteApp.Server.Application.Pokemon;
 using MySvelteApp.Server.Application.Weather;
@@ -91,6 +94,60 @@ builder
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks();
+
+// Add rate limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 100, // 100 requests per window
+                Window = TimeSpan.FromMinutes(1), // per minute
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0, // No queuing, reject immediately
+            }
+        )
+    );
+
+    // Stricter rate limiting for authentication endpoints
+    options.AddPolicy(
+        "auth-strict",
+        httpContext =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                factory: partition => new FixedWindowRateLimiterOptions
+                {
+                    AutoReplenishment = true,
+                    PermitLimit = 5, // Only 5 auth attempts per window
+                    Window = TimeSpan.FromMinutes(5), // per 5 minutes
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 0, // No queuing, reject immediately
+                }
+            )
+    );
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Custom response for rate limiting
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/json";
+
+        var problemDetails = new ProblemDetails
+        {
+            Status = StatusCodes.Status429TooManyRequests,
+            Title = "Too Many Requests",
+            Detail = "You have made too many requests. Please try again later.",
+            Instance = context.HttpContext.Request.Path,
+        };
+
+        await context.HttpContext.Response.WriteAsJsonAsync(problemDetails, token);
+    };
+});
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -219,9 +276,35 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
+
+// Configure specific rate limiting for auth endpoints
+app.MapControllers().RequireRateLimiting();
+
+// Health check bypasses rate limiting
 app.MapHealthChecks("/health").AllowAnonymous();
+
+// Stricter rate limiting for authentication endpoints
+app.MapPost(
+        "/Auth/login",
+        async (IAuthService authService, LoginRequest request) =>
+        {
+            var result = await authService.LoginAsync(request);
+            return result.Success ? Results.Ok(result) : Results.BadRequest(result);
+        }
+    )
+    .RequireRateLimiting(policyName: "auth-strict");
+
+app.MapPost(
+        "/Auth/register",
+        async (IAuthService authService, RegisterRequest request) =>
+        {
+            var result = await authService.RegisterAsync(request);
+            return result.Success ? Results.Ok(result) : Results.BadRequest(result);
+        }
+    )
+    .RequireRateLimiting(policyName: "auth-strict");
 app.Run();

@@ -11,7 +11,8 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { login } from '$src/routes/(auth)/auth.remote';
-	import { resolveAuthErrorMessage } from '$lib/auth/error-messages';
+	import { resolveAuthError, getUserFriendlyMessage } from '$lib/auth/error-messages';
+	import { loginRateLimiter } from '$lib/utils/rate-limiting';
 	import { toast } from 'svelte-sonner';
 
 	const DEFAULT_ERROR_MESSAGE = 'Login failed. Please check your credentials.';
@@ -44,12 +45,32 @@
 			<CardContent>
 				<form
 					{...login.enhance(async ({ submit }) => {
+						// Check rate limit before submitting
+						const limit = loginRateLimiter.checkLimit();
+						if (!limit.allowed) {
+							const resetTime = loginRateLimiter.getFormattedResetTime();
+							toast.error(`Too many login attempts. Please try again in ${resetTime}.`);
+							return;
+						}
+
 						try {
 							await submit();
+							// Clear rate limit attempts on successful login
+							loginRateLimiter.clearAttempts();
 							toast.success('Login successful!');
 							goto('/');
 						} catch (error: unknown) {
-							toast.error(resolveAuthErrorMessage(error, DEFAULT_ERROR_MESSAGE));
+							const enhancedError = resolveAuthError(error, DEFAULT_ERROR_MESSAGE);
+							const userFriendlyMessage = getUserFriendlyMessage(enhancedError);
+
+							// Handle rate limiting errors specifically
+							if (enhancedError.statusCode === 429) {
+								toast.error(
+									'Too many login attempts. Please wait a few minutes before trying again.'
+								);
+							} else {
+								toast.error(userFriendlyMessage);
+							}
 						}
 					})}
 					class="space-y-4"
