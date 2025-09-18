@@ -1,40 +1,9 @@
 import { form, command, query } from '$app/server';
 import { getRequestEvent } from '$app/server';
-import { error, fail } from '@sveltejs/kit';
-import type { ActionFailure } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { postAuthLogin, postAuthRegister, getTestAuth } from '$api/schema/sdk.gen';
 import { zAuthErrorResponse } from '$api/schema/zod.gen';
 import { z } from 'zod';
-import type { AuthErrorResponse } from '$api/schema/types.gen';
-
-const extractAuthMessage = (payload: unknown): string | undefined => {
-	const parsed = zAuthErrorResponse.safeParse(payload);
-	if (!parsed.success) return undefined;
-	const message = parsed.data.message;
-	return typeof message === 'string' && message.trim().length > 0 ? message : undefined;
-};
-
-export const resolveAuthErrorMessage = (err: unknown, fallback: string): string => {
-	if (typeof err === 'object' && err !== null) {
-		if ('body' in err) {
-			const message = extractAuthMessage((err as { body?: unknown }).body);
-			if (message) return message;
-		}
-
-		if ('data' in err) {
-			const failure = err as ActionFailure<AuthErrorResponse>;
-			const message = extractAuthMessage(failure.data);
-			if (message) return message;
-		}
-	}
-
-	if (err instanceof Error) {
-		const message = err.message?.trim();
-		if (message) return message;
-	}
-
-	return fallback;
-};
 
 // Stricter UI-side validation schemas for immediate feedback
 const zLoginForm = z.object({
@@ -72,7 +41,7 @@ export const login = form(async (formData) => {
 	});
 
 	if (!parsed.success) {
-		return fail(400, { message: 'Invalid login data' });
+		throw error(400, { message: 'Invalid login data' });
 	}
 
 	const { username, password } = parsed.data;
@@ -107,7 +76,7 @@ export const login = form(async (formData) => {
 				: err instanceof Error
 					? err.message
 					: 'Network error. Please check your connection and try again.';
-		return fail(401, { message });
+		throw error(401, { message });
 	}
 });
 
@@ -122,7 +91,7 @@ export const register = form(async (formData) => {
 
 	if (!parsed.success) {
 		const message = parsed.error.issues[0]?.message ?? 'Invalid registration data';
-		return fail(400, { message });
+		throw error(400, { message });
 	}
 
 	const { username, email, password } = parsed.data;
@@ -146,7 +115,7 @@ export const register = form(async (formData) => {
 				: err instanceof Error
 					? err.message
 					: 'Registration failed';
-		return fail(400, { message });
+		throw error(400, { message });
 	}
 });
 

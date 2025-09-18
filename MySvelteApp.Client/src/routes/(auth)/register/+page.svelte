@@ -10,7 +10,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { register, resolveAuthErrorMessage } from '$src/routes/(auth)/auth.remote';
+	import { register } from '$src/routes/(auth)/auth.remote';
+	import { resolveAuthErrorMessage } from '$lib/auth/error-messages';
 
 	let error = $state<string | null>(null);
 	let success = $state<string | null>(null);

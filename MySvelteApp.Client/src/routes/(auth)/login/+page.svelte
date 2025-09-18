@@ -10,7 +10,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { login, resolveAuthErrorMessage } from '$src/routes/(auth)/auth.remote';
+	import { login } from '$src/routes/(auth)/auth.remote';
+	import { resolveAuthErrorMessage } from '$lib/auth/error-messages';
 	import { toast } from 'svelte-sonner';
 
 	const DEFAULT_ERROR_MESSAGE = 'Login failed. Please check your credentials.';

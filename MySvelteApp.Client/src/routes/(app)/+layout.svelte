@@ -6,6 +6,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { logout } from '$src/routes/(auth)/auth.remote';
 	import { goto } from '$app/navigation';
+	import { Toaster } from 'svelte-sonner';
 
 	let { children } = $props();
 </script>
@@ -121,4 +122,5 @@
 			</main>
 		</Sidebar.Inset>
 	</div>
+	<Toaster />
 </Sidebar.Provider>
