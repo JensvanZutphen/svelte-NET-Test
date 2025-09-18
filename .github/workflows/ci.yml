@@ -40,6 +40,7 @@ jobs:
           MySvelteApp.Client/package-lock.json
 
     - name: Install root dependencies
+      if: ${{ hashFiles('package-lock.json') != '' }}
       run: npm ci
 
     - name: Install client dependencies
@@ -56,7 +57,7 @@ jobs:
       # Note: Set SkipClientBuild=true environment variable to skip client build for faster test-only runs
 
     - name: Run .NET tests
-      run: dotnet test svelte-NET-Test.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+      run: dotnet test MySvelteApp.Server/Tests/MySvelteApp.Server.Tests.csproj --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
 
     - name: Run ast-grep Svelte 5 compliance scan
       uses: ast-grep/action@v1.3
@@ -66,6 +67,9 @@ jobs:
 
     - name: Run client type checking
       run: npm run check --prefix MySvelteApp.Client
+
+    - name: Run client linting
+      run: npm run lint --prefix MySvelteApp.Client
 
     - name: Run client unit tests
       run: npm run test:unit --prefix MySvelteApp.Client
@@ -77,5 +81,3 @@ jobs:
         name: test-results
         path: |
           **/test-results.trx
-          MySvelteApp.Client/playwright-report/
-          MySvelteApp.Client/test-results/

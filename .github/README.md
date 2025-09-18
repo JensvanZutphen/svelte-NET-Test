@@ -9,12 +9,12 @@ Runs on every push and pull request to `main` and `develop` branches.
 
 **What it does:**
 - ✅ Sets up .NET 9.0 environment
-- ✅ Sets up Node.js 18 environment
+- ✅ Sets up Node.js 20 environment
 - ✅ Installs dependencies for both backend and frontend
 - ✅ Builds the Svelte client application
 - ✅ Builds the .NET solution
 - ✅ Runs .NET unit tests (xUnit)
-- ✅ Runs client linting (ESLint)
+- ✅ Runs client linting (ESLint) — in code-quality.yml
 - ✅ Runs client type checking (TypeScript)
 - ✅ Runs client unit tests (Vitest)
 - 📊 Uploads test results as artifacts

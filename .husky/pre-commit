@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+echo "🔍 Running Prettier formatter..."
+cd MySvelteApp.Client && npm run format
+
+echo "🔍 Formatting C# code..."
+cd .. && dotnet format MySvelteApp.Server/MySvelteApp.Server.csproj --verbosity minimal

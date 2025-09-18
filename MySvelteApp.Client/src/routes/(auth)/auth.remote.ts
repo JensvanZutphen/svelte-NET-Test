@@ -8,13 +8,13 @@ import { z } from 'zod';
 // Stricter UI-side validation schemas for immediate feedback
 const zLoginForm = z.object({
 	username: z.string().trim().min(1, 'Username is required'),
-	password: z.string().min(1, 'Password is required'),
+	password: z.string().min(1, 'Password is required')
 });
 
 const zRegisterForm = z.object({
 	username: z.string().trim().min(1, 'Username is required'),
 	email: z.string().email('Valid email required'),
-	password: z.string().min(8, 'Password must be at least 8 characters'),
+	password: z.string().min(8, 'Password must be at least 8 characters')
 });
 
 // Login form handler with automatic validation
@@ -22,15 +22,15 @@ export const login = form(async (data) => {
 	// Validate form data with stricter UI schema
 	const validationResult = zLoginForm.safeParse({
 		username: data.get('username'),
-		password: data.get('password'),
+		password: data.get('password')
 	});
 	if (!validationResult.success) {
 		error(400, 'Invalid login data');
 	}
-	
+
 	const loginData = validationResult.data;
 	const { cookies } = getRequestEvent();
-	
+
 	try {
 		// Use generated API client with ThrowOnError for cleaner control flow
 		const response = await postAuthLogin({
@@ -49,21 +49,23 @@ export const login = form(async (data) => {
 				sameSite: 'strict'
 			});
 		}
-		
+
 		return result;
 	} catch (err) {
 		console.error('Login error:', err);
 		const parsed = zAuthErrorResponse.safeParse(err);
-		const message = parsed.success && parsed.data.message
-			? parsed.data.message
-			: (err instanceof Error ? err.message : 'Network error. Please check your connection and try again.');
+		const message =
+			parsed.success && parsed.data.message
+				? parsed.data.message
+				: err instanceof Error
+					? err.message
+					: 'Network error. Please check your connection and try again.';
 		error(401, message);
 	}
 });
 
 // Registration form handler with automatic validation
 export const register = form(async (data) => {
-
 	// Validate passwords match
 	const confirmPassword = data.get('confirmPassword');
 	if (!confirmPassword || confirmPassword !== data.get('password')) {
@@ -74,14 +76,14 @@ export const register = form(async (data) => {
 	const validationResult = zRegisterForm.safeParse({
 		username: data.get('username'),
 		email: data.get('email'),
-		password: data.get('password'),
+		password: data.get('password')
 	});
 	if (!validationResult.success) {
 		error(400, 'Invalid registration data');
 	}
-	
+
 	const registerData = validationResult.data;
-	
+
 	try {
 		// Use generated API client with ThrowOnError
 		const response = await postAuthRegister({
@@ -95,9 +97,12 @@ export const register = form(async (data) => {
 	} catch (err) {
 		console.log('Registration catch error:', err);
 		const parsed = zAuthErrorResponse.safeParse(err);
-		const message = parsed.success && parsed.data.message
-			? parsed.data.message
-			: (err instanceof Error ? err.message : 'Registration failed');
+		const message =
+			parsed.success && parsed.data.message
+				? parsed.data.message
+				: err instanceof Error
+					? err.message
+					: 'Registration failed';
 		error(400, message);
 	}
 });
@@ -105,10 +110,10 @@ export const register = form(async (data) => {
 // Logout command
 export const logout = command(async () => {
 	const { cookies } = getRequestEvent();
-	
+
 	// Clear auth token cookie
 	cookies.delete('auth_token', { path: '/' });
-	
+
 	return { success: true };
 });
 
@@ -125,7 +130,7 @@ export const getCurrentUser = query(async () => {
 	try {
 		const response = await getTestAuth({
 			headers: {
-				'Authorization': `Bearer ${token}`
+				Authorization: `Bearer ${token}`
 			},
 			throwOnError: true as const
 		});

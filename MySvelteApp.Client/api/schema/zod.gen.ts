@@ -3,88 +3,49 @@
 import { z } from 'zod';
 
 export const zAuthErrorResponse = z.object({
-    message: z.optional(z.union([
-        z.string(),
-        z.null()
-    ]))
+	message: z.optional(z.union([z.string(), z.null()]))
 });
 
 export const zAuthSuccessResponse = z.object({
-    token: z.optional(z.union([
-        z.string(),
-        z.null()
-    ])),
-    userId: z.optional(z.int()),
-    username: z.optional(z.union([
-        z.string(),
-        z.null()
-    ]))
+	token: z.optional(z.union([z.string(), z.null()])),
+	userId: z.optional(z.int()),
+	username: z.optional(z.union([z.string(), z.null()]))
 });
 
 export const zLoginRequest = z.object({
-    username: z.optional(z.union([
-        z.string(),
-        z.null()
-    ])),
-    password: z.optional(z.union([
-        z.string(),
-        z.null()
-    ]))
+	username: z.optional(z.union([z.string(), z.null()])),
+	password: z.optional(z.union([z.string(), z.null()]))
 });
 
 export const zRandomPokemonDto = z.object({
-    name: z.optional(z.union([
-        z.string(),
-        z.null()
-    ])),
-    type: z.optional(z.union([
-        z.string(),
-        z.null()
-    ])),
-    image: z.optional(z.union([
-        z.string(),
-        z.null()
-    ]))
+	name: z.optional(z.union([z.string(), z.null()])),
+	type: z.optional(z.union([z.string(), z.null()])),
+	image: z.optional(z.union([z.string(), z.null()]))
 });
 
 export const zRegisterRequest = z.object({
-    username: z.optional(z.union([
-        z.string(),
-        z.null()
-    ])),
-    email: z.optional(z.union([
-        z.string(),
-        z.null()
-    ])),
-    password: z.optional(z.union([
-        z.string(),
-        z.null()
-    ]))
+	username: z.optional(z.union([z.string(), z.null()])),
+	email: z.optional(z.union([z.string(), z.null()])),
+	password: z.optional(z.union([z.string(), z.null()]))
 });
 
 export const zWeatherForecastDto = z.object({
-    date: z.optional(z.iso.date()),
-    temperatureC: z.optional(z.int()),
-    summary: z.optional(z.union([
-        z.string(),
-        z.null()
-    ])),
-    temperatureF: z.optional(z.int().readonly())
+	date: z.optional(z.iso.date()),
+	temperatureC: z.optional(z.int()),
+	summary: z.optional(z.union([z.string(), z.null()])),
+	temperatureF: z.optional(z.int().readonly())
 });
 
 export const zWeatherForecastDtoWritable = z.object({
-    date: z.optional(z.iso.date()),
-    temperatureC: z.optional(z.int()),
-    summary: z.optional(z.union([
-        z.string(),
-        z.null()
-    ]))
+	date: z.optional(z.iso.date()),
+	temperatureC: z.optional(z.int()),
+	summary: z.optional(z.union([z.string(), z.null()]))
 });
 
 export const zPostAuthRegisterData = z.object({
-    body: z.optional(zRegisterRequest),
-    path: z.optional(z.never()),
-    query: z.optional(z.never())
+	body: z.optional(zRegisterRequest),
+	path: z.optional(z.never()),
+	query: z.optional(z.never())
 });
 
 /**
@@ -93,9 +54,9 @@ export const zPostAuthRegisterData = z.object({
 export const zPostAuthRegisterResponse = zAuthSuccessResponse;
 
 export const zPostAuthLoginData = z.object({
-    body: z.optional(zLoginRequest),
-    path: z.optional(z.never()),
-    query: z.optional(z.never())
+	body: z.optional(zLoginRequest),
+	path: z.optional(z.never()),
+	query: z.optional(z.never())
 });
 
 /**
@@ -104,9 +65,9 @@ export const zPostAuthLoginData = z.object({
 export const zPostAuthLoginResponse = zAuthSuccessResponse;
 
 export const zGetRandomPokemonData = z.object({
-    body: z.optional(z.never()),
-    path: z.optional(z.never()),
-    query: z.optional(z.never())
+	body: z.optional(z.never()),
+	path: z.optional(z.never()),
+	query: z.optional(z.never())
 });
 
 /**
@@ -115,15 +76,15 @@ export const zGetRandomPokemonData = z.object({
 export const zGetRandomPokemonResponse = zRandomPokemonDto;
 
 export const zGetTestAuthData = z.object({
-    body: z.optional(z.never()),
-    path: z.optional(z.never()),
-    query: z.optional(z.never())
+	body: z.optional(z.never()),
+	path: z.optional(z.never()),
+	query: z.optional(z.never())
 });
 
 export const zGetWeatherForecastData = z.object({
-    body: z.optional(z.never()),
-    path: z.optional(z.never()),
-    query: z.optional(z.never())
+	body: z.optional(z.never()),
+	path: z.optional(z.never()),
+	query: z.optional(z.never())
 });
 
 /**

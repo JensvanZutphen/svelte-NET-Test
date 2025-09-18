@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import {
+		Card,
+		CardContent,
+		CardDescription,
+		CardHeader,
+		CardTitle
+	} from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -8,15 +14,18 @@
 	import { toast } from 'svelte-sonner';
 </script>
 
-<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-	<div class="max-w-md w-full space-y-8">
+<div
+	class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8 dark:bg-gray-900"
+>
+	<div class="w-full max-w-md space-y-8">
 		<div class="text-center">
-			<h2 class="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-				Sign in to your account
-			</h2>
+			<h2 class="mt-6 text-3xl font-bold text-gray-900 dark:text-white">Sign in to your account</h2>
 			<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
 				Don't have an account?
-				<a href="/register" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+				<a
+					href="/register"
+					class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+				>
 					Sign up
 				</a>
 			</p>
@@ -24,13 +33,13 @@
 
 		<Card>
 			<CardHeader class="space-y-1">
-				<CardTitle class="text-2xl font-bold text-center">Welcome back</CardTitle>
+				<CardTitle class="text-center text-2xl font-bold">Welcome back</CardTitle>
 				<CardDescription class="text-center">
 					Enter your credentials to access your account
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<form 
+				<form
 					{...login.enhance(async ({ form, data, submit }) => {
 						try {
 							await submit();
@@ -39,7 +48,7 @@
 						} catch (error: any) {
 							toast.error(error?.message || 'Login failed. Please check your credentials.');
 						}
-					})} 
+					})}
 					class="space-y-4"
 				>
 					<div class="space-y-2">
@@ -64,11 +73,7 @@
 						/>
 					</div>
 
-					<Button 
-						type="submit" 
-						class="w-full"
-						disabled={!!login.pending}
-					>
+					<Button type="submit" class="w-full" disabled={!!login.pending}>
 						{#if login.pending}
 							Signing in...
 						{:else}
@@ -77,7 +82,10 @@
 					</Button>
 
 					<div class="text-center">
-						<a href="/forgot-password" class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400">
+						<a
+							href="/forgot-password"
+							class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400"
+						>
 							Forgot your password?
 						</a>
 					</div>
