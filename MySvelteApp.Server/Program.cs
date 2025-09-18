@@ -65,11 +65,17 @@ builder.Services
             ValidateIssuerSigningKey = true,
             ValidIssuer = o.Issuer,
             ValidAudience = o.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(o.Key)),
+            IssuerSigningKey = new SymmetricSecurityKey(DeriveKeyBytes(o.Key)),
             // Optional hardening: stricter expiry validation
             ClockSkew = TimeSpan.Zero
         };
     });
+
+// Shared key derivation helper to prevent duplication
+static byte[] DeriveKeyBytes(string key) =>
+    key.StartsWith("base64:", StringComparison.Ordinal)
+        ? Convert.FromBase64String(key["base64:".Length..])
+        : Encoding.UTF8.GetBytes(key);
 
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder()

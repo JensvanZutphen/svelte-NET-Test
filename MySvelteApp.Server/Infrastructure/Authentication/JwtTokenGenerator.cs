@@ -20,11 +20,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
     public string GenerateToken(User user)
     {
-        // Support base64-encoded keys
-        var key = _jwtOptions.Key;
-        var keyBytes = key.StartsWith("base64:", StringComparison.Ordinal)
-            ? Convert.FromBase64String(key["base64:".Length..])
-            : Encoding.UTF8.GetBytes(key);
+        var keyBytes = DeriveKeyBytes(_jwtOptions.Key);
         var securityKey = new SymmetricSecurityKey(keyBytes);
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -46,4 +42,9 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    private static byte[] DeriveKeyBytes(string key) =>
+        key.StartsWith("base64:", StringComparison.Ordinal)
+            ? Convert.FromBase64String(key["base64:".Length..])
+            : Encoding.UTF8.GetBytes(key);
 }
