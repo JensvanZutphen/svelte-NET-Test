@@ -11,7 +11,7 @@ This template demonstrates best practices for building full-stack applications u
 - **Type-safe communication** between frontend and backend
 - **Modern development workflow** with Docker and CI/CD
 
-Perfect for developers looking to build scalable, maintainable full-stack applications.
+Perfect for developers looking to build scalable, maintainable full-stai dontck applications.
 
 ## ✨ What Makes This Template Special
 
@@ -347,7 +347,7 @@ svelte-NET-Test/
 **Key Documentation:**
 - **[structure.md](./structure.md)** - Complete code organization guide
 - **[CLAUDE.md](./CLAUDE.md)** - AI assistant development guide
-- **[.github/README.md](./.github/README.md)** - CI/CD pipeline documentation
+- **[.github/CI-CD-README.md](./.github/CI-CD-README.md)** - CI/CD pipeline documentation
 
 ### Architecture Decisions
 - **Clean Architecture** for maintainability and testability

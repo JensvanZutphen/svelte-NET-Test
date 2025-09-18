@@ -65,6 +65,7 @@
 		"@opentelemetry/exporter-trace-otlp-http": "^0.53.0",
 		"@opentelemetry/sdk-node": "^0.53.0",
 		"import-in-the-middle": "^1.7.2",
+		"jwt-decode": "^4.0.0",
 		"pino": "^9.5.0",
 		"pino-loki": "^2.3.0",
 		"zod": "^4.1.7"
