@@ -58,8 +58,11 @@ jobs:
     - name: Run .NET tests
       run: dotnet test svelte-NET-Test.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
 
-    - name: Run client linting
-      run: npm run lint --prefix MySvelteApp.Client
+    - name: Run ast-grep Svelte 5 compliance scan
+      uses: ast-grep/action@v1.3
+      with:
+        version: latest
+        config: sgconfig.yml
 
     - name: Run client type checking
       run: npm run check --prefix MySvelteApp.Client
