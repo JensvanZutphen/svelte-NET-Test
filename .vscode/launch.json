@@ -28,7 +28,7 @@
         },
         {
             "name": "Start Observability",
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
             "runtimeExecutable": "docker",
             "runtimeArgs": [
