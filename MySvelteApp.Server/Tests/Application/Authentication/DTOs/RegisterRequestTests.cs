@@ -13,20 +13,16 @@ public class RegisterRequestTests
         var request = new RegisterRequest();
 
         // Assert
-        request.Username.Should().Be(string.Empty);
-        request.Email.Should().Be(string.Empty);
-        request.Password.Should().Be(string.Empty);
+        request.Username.Should().BeEmpty();
+        request.Email.Should().BeEmpty();
+        request.Password.Should().BeEmpty();
     }
 
-    [Fact]
-    public void RegisterRequest_WithValidValues_ShouldSetPropertiesCorrectly()
+    [Theory]
+    [InlineData("testuser", "test@example.com", "testpassword")]
+    [InlineData("user.name", "user+repo@example.co", "P@ssw0rd!")]
+    public void RegisterRequest_WithValues_ShouldSetProperties(string username, string email, string password)
     {
-        // Arrange
-        const string username = "testuser";
-        const string email = "test@example.com";
-        const string password = "testpassword";
-
-        // Act
         var request = new RegisterRequest
         {
             Username = username,
@@ -34,7 +30,6 @@ public class RegisterRequestTests
             Password = password
         };
 
-        // Assert
         request.Username.Should().Be(username);
         request.Email.Should().Be(email);
         request.Password.Should().Be(password);

@@ -159,6 +159,24 @@ public class JwtTokenGeneratorTests
 
         jwtToken.Issuer.Should().Be(jwtOptions.Value.Issuer);
         jwtToken.Audiences.Should().Contain(jwtOptions.Value.Audience);
+
+        // Validate signature using the same key material
+        var keyString = jwtOptions.Value.Key;
+        var keyBytes = keyString.StartsWith("base64:", StringComparison.OrdinalIgnoreCase)
+            ? Convert.FromBase64String(keyString.Substring("base64:".Length))
+            : Encoding.UTF8.GetBytes(keyString);
+        var validationParams = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ValidateIssuer = true,
+            ValidIssuer = jwtOptions.Value.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtOptions.Value.Audience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1)
+        };
+        new JwtSecurityTokenHandler().ValidateToken(token, validationParams, out _);
     }
 
     [Fact]
@@ -188,6 +206,21 @@ public class JwtTokenGeneratorTests
 
         jwtToken.Issuer.Should().Be(jwtOptions.Value.Issuer);
         jwtToken.Audiences.Should().Contain(jwtOptions.Value.Audience);
+
+        // Validate signature using the plain-text key
+        var keyBytes = Encoding.UTF8.GetBytes(jwtOptions.Value.Key);
+        var validationParams = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ValidateIssuer = true,
+            ValidIssuer = jwtOptions.Value.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtOptions.Value.Audience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1)
+        };
+        new JwtSecurityTokenHandler().ValidateToken(token, validationParams, out _);
     }
 
     [Fact]

@@ -8,17 +8,26 @@ public class PasswordHasher : IPasswordHasher
 {
     public (string Hash, string Salt) HashPassword(string password)
     {
-        using var hmac = new HMACSHA512();
-        var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return (Convert.ToBase64String(hash), Convert.ToBase64String(hmac.Key));
+        var salt = RandomNumberGenerator.GetBytes(16);
+        var hash = Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            salt,
+            100_000,
+            HashAlgorithmName.SHA512,
+            64);
+        return (Convert.ToBase64String(hash), Convert.ToBase64String(salt));
     }
 
     public bool VerifyPassword(string password, string hash, string salt)
     {
         var saltBytes = Convert.FromBase64String(salt);
-        using var hmac = new HMACSHA512(saltBytes);
-        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
         var storedHash = Convert.FromBase64String(hash);
-        return CryptographicOperations.FixedTimeEquals(computedHash, storedHash);
+        var computed = Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            saltBytes,
+            100_000,
+            HashAlgorithmName.SHA512,
+            storedHash.Length);
+        return CryptographicOperations.FixedTimeEquals(computed, storedHash);
     }
 }

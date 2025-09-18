@@ -77,7 +77,7 @@ public class AuthResultTests
         // Arrange
         var result = new AuthResult
         {
-            Success = true,
+            Success = false,
             UserId = 123,
             Username = "testuser",
             Token = "jwt.token",
@@ -85,9 +85,8 @@ public class AuthResultTests
             ErrorType = AuthErrorType.Validation
         };
 
-        // Act & Assert - Properties should be init-only
-        // This test ensures the class is designed with init properties for immutability
-        result.Success.Should().BeTrue();
+        // Act & Assert - Values set via object initializer should persist
+        result.Success.Should().BeFalse();
         result.UserId.Should().Be(123);
         result.Username.Should().Be("testuser");
         result.Token.Should().Be("jwt.token");

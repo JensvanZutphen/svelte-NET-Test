@@ -9,14 +9,9 @@ using MySvelteApp.Server.Domain.Entities;
 
 namespace MySvelteApp.Server.Infrastructure.Authentication;
 
-public class JwtTokenGenerator : IJwtTokenGenerator
+public class JwtTokenGenerator(IOptions<JwtOptions> jwtOptions) : IJwtTokenGenerator
 {
-    private readonly JwtOptions _jwtOptions;
-
-    public JwtTokenGenerator(IOptions<JwtOptions> jwtOptions)
-    {
-        _jwtOptions = jwtOptions.Value;
-    }
+    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
     public string GenerateToken(User user)
     {

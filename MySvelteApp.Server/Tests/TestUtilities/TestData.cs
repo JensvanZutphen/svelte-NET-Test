@@ -77,6 +77,34 @@ public static class TestData
                 Username = "",
                 Password = "ValidPassword123"
             };
+
+            public static RegisterRequest InvalidDoubleDotEmailRequest => new()
+            {
+                Username = "testuser",
+                Email = "test..user@example.com",
+                Password = "ValidPassword123"
+            };
+
+            public static RegisterRequest LeadingDotDomainEmailRequest => new()
+            {
+                Username = "testuser",
+                Email = "user@.example.com",
+                Password = "ValidPassword123"
+            };
+
+            public static RegisterRequest TrailingDotDomainEmailRequest => new()
+            {
+                Username = "testuser",
+                Email = "user@example.com.",
+                Password = "ValidPassword123"
+            };
+
+            public static RegisterRequest EmailWithSpacesRequest => new()
+            {
+                Username = "testuser",
+                Email = "  test@example.com  ",
+                Password = "ValidPassword123"
+            };
         }
     }
 

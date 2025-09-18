@@ -15,17 +15,18 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
+        return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
     }
 
     public async Task<bool> UsernameExistsAsync(string username, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users.AnyAsync(u => u.Username == username, cancellationToken);
+        return await _dbContext.Users.AsNoTracking().AnyAsync(u => u.Username == username, cancellationToken);
     }
 
     public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower(), cancellationToken);
+        var normalizedEmail = email.ToLowerInvariant();
+        return await _dbContext.Users.AsNoTracking().AnyAsync(u => u.Email.ToLower() == normalizedEmail, cancellationToken);
     }
 
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)

@@ -36,6 +36,7 @@ To run tests locally before pushing:
 dotnet test svelte-NET-Test.sln
 
 # Frontend tests
+npm ci --prefix MySvelteApp.Client
 npm run test:unit --prefix MySvelteApp.Client
 
 # Frontend linting

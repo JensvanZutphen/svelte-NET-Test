@@ -8,7 +8,7 @@ namespace MySvelteApp.Server.Application.Authentication;
 public class AuthService : IAuthService
 {
     private static readonly Regex UsernameRegex = new("^[a-zA-Z0-9_]+$", RegexOptions.Compiled);
-    private static readonly Regex EmailRegex = new("^(?!.*\\.\\.)[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", RegexOptions.Compiled);
+    private static readonly Regex EmailRegex = new("^(?!.*\\.\\.)[^\\s@]+@[^\\s@.]+\\.[^\\s@.]+$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex PasswordRegex = new("(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)", RegexOptions.Compiled);
 
     private readonly IUserRepository _userRepository;
@@ -104,27 +104,30 @@ public class AuthService : IAuthService
 
     private static (string Message, AuthErrorType Type)? ValidateRegisterRequest(RegisterRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Username))
+        var username = request.Username?.Trim();
+        var email = request.Email?.Trim();
+
+        if (string.IsNullOrWhiteSpace(username))
         {
             return ("Username is required.", AuthErrorType.Validation);
         }
 
-        if (request.Username.Length < 3)
+        if (username.Length < 3)
         {
             return ("Username must be at least 3 characters long.", AuthErrorType.Validation);
         }
 
-        if (!UsernameRegex.IsMatch(request.Username))
+        if (!UsernameRegex.IsMatch(username))
         {
             return ("Username can only contain letters, numbers, and underscores.", AuthErrorType.Validation);
         }
 
-        if (string.IsNullOrWhiteSpace(request.Email))
+        if (string.IsNullOrWhiteSpace(email))
         {
             return ("Email is required.", AuthErrorType.Validation);
         }
 
-        if (!EmailRegex.IsMatch(request.Email))
+        if (!EmailRegex.IsMatch(email))
         {
             return ("Please enter a valid email address.", AuthErrorType.Validation);
         }
@@ -149,7 +152,8 @@ public class AuthService : IAuthService
 
     private static (string Message, AuthErrorType Type)? ValidateLoginRequest(LoginRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Username))
+        var username = request.Username?.Trim();
+        if (string.IsNullOrWhiteSpace(username))
         {
             return ("Username is required.", AuthErrorType.Validation);
         }

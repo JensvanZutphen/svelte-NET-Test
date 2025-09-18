@@ -15,7 +15,7 @@ public class User
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException("Username cannot be null or empty", nameof(value));
+                throw new ArgumentException("Username cannot be null or whitespace", nameof(value));
             }
             _username = value;
         }
@@ -28,9 +28,9 @@ public class User
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException("Email cannot be null or empty", nameof(value));
+                throw new ArgumentException("Email cannot be null or whitespace", nameof(value));
             }
-            _email = value;
+            _email = value.Trim().ToLowerInvariant();
         }
     }
 
@@ -41,7 +41,7 @@ public class User
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException("PasswordHash cannot be null or empty", nameof(value));
+                throw new ArgumentException("PasswordHash cannot be null or whitespace", nameof(value));
             }
             _passwordHash = value;
         }
@@ -54,7 +54,7 @@ public class User
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException("PasswordSalt cannot be null or empty", nameof(value));
+                throw new ArgumentException("PasswordSalt cannot be null or whitespace", nameof(value));
             }
             _passwordSalt = value;
         }

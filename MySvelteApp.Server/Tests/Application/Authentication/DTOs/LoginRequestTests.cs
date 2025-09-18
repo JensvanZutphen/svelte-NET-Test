@@ -13,17 +13,15 @@ public class LoginRequestTests
         var request = new LoginRequest();
 
         // Assert
-        request.Username.Should().Be(string.Empty);
-        request.Password.Should().Be(string.Empty);
+        request.Username.Should().BeEmpty();
+        request.Password.Should().BeEmpty();
     }
 
-    [Fact]
-    public void LoginRequest_WithValidValues_ShouldSetPropertiesCorrectly()
+    [Theory]
+    [InlineData("testuser", "testpassword")]
+    [InlineData("user2", "P@ssw0rd!")]
+    public void LoginRequest_WithValidValues_ShouldSetPropertiesCorrectly(string username, string password)
     {
-        // Arrange
-        const string username = "testuser";
-        const string password = "testpassword";
-
         // Act
         var request = new LoginRequest
         {

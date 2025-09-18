@@ -10,13 +10,14 @@ namespace MySvelteApp.Server.Tests.Infrastructure.Persistence;
 
 public class UserRepositoryTests : IDisposable
 {
+    private readonly string _dbName;
     private readonly AppDbContext _dbContext;
     private readonly UserRepository _userRepository;
 
     public UserRepositoryTests()
     {
-        const string defaultDbName = "UserRepositoryTests_DefaultDb";
-        _dbContext = TestHelper.CreateInMemoryDbContext(defaultDbName);
+        _dbName = $"UserRepositoryTests_{Guid.NewGuid():N}";
+        _dbContext = TestHelper.CreateInMemoryDbContext(_dbName);
         _userRepository = new UserRepository(_dbContext);
     }
 
@@ -181,7 +182,7 @@ public class UserRepositoryTests : IDisposable
     public async Task AddAsync_ShouldSaveChangesToDatabase()
     {
         // Arrange
-        const string testDbName = "PersistenceTestDb";
+        var testDbName = $"PersistenceTestDb_{Guid.NewGuid():N}";
         var newUser = TestData.Users.NewUser;
 
         // Create a fresh context with a known database name for this test
@@ -190,7 +191,6 @@ public class UserRepositoryTests : IDisposable
 
         // Act
         await testRepository.AddAsync(newUser);
-        await testContext.SaveChangesAsync();
 
         // Assert
         // First verify the user doesn't exist in a different database (isolation test)
