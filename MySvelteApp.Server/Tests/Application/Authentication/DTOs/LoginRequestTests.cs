@@ -20,14 +20,13 @@ public class LoginRequestTests
     [Theory]
     [InlineData("testuser", "testpassword")]
     [InlineData("user2", "P@ssw0rd!")]
-    public void LoginRequest_WithValidValues_ShouldSetPropertiesCorrectly(string username, string password)
+    public void LoginRequest_WithValidValues_ShouldSetPropertiesCorrectly(
+        string username,
+        string password
+    )
     {
         // Act
-        var request = new LoginRequest
-        {
-            Username = username,
-            Password = password
-        };
+        var request = new LoginRequest { Username = username, Password = password };
 
         // Assert
         request.Username.Should().Be(username);

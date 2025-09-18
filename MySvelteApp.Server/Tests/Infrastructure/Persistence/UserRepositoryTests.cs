@@ -169,7 +169,9 @@ public class UserRepositoryTests : IDisposable
         await _userRepository.AddAsync(newUser);
 
         // Assert
-        var persistedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username);
+        var persistedUser = await _dbContext.Users.FirstOrDefaultAsync(u =>
+            u.Username == newUser.Username
+        );
         persistedUser.Should().NotBeNull();
         persistedUser!.Username.Should().Be(newUser.Username);
         persistedUser.Email.Should().Be(newUser.Email);
@@ -195,12 +197,16 @@ public class UserRepositoryTests : IDisposable
         // Assert
         // First verify the user doesn't exist in a different database (isolation test)
         using var differentContext = TestHelper.CreateInMemoryDbContext("DifferentDb");
-        var userInDifferentDb = await differentContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username);
+        var userInDifferentDb = await differentContext.Users.FirstOrDefaultAsync(u =>
+            u.Username == newUser.Username
+        );
         userInDifferentDb.Should().BeNull(); // Should not exist in different database
 
         // Then verify the user exists in the same database (persistence test)
         using var sameContext = TestHelper.CreateInMemoryDbContext(testDbName);
-        var persistedUser = await sameContext.Users.FirstOrDefaultAsync(u => u.Username == newUser.Username);
+        var persistedUser = await sameContext.Users.FirstOrDefaultAsync(u =>
+            u.Username == newUser.Username
+        );
         persistedUser.Should().NotBeNull(); // Should exist in the same database
         persistedUser!.Username.Should().Be(newUser.Username);
         persistedUser.Email.Should().Be(newUser.Email);
@@ -283,17 +289,21 @@ public class UserRepositoryTests : IDisposable
         cts.Cancel();
 
         // Act & Assert
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => _userRepository.GetByUsernameAsync(user.Username, cts.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            _userRepository.GetByUsernameAsync(user.Username, cts.Token)
+        );
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => _userRepository.UsernameExistsAsync(user.Username, cts.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            _userRepository.UsernameExistsAsync(user.Username, cts.Token)
+        );
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => _userRepository.EmailExistsAsync(user.Email, cts.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            _userRepository.EmailExistsAsync(user.Email, cts.Token)
+        );
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => _userRepository.AddAsync(TestData.Users.NewUser, cts.Token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            _userRepository.AddAsync(TestData.Users.NewUser, cts.Token)
+        );
     }
 
     [Fact]
@@ -309,14 +319,13 @@ public class UserRepositoryTests : IDisposable
             Username = user1.Username, // Same username
             Email = "different@example.com",
             PasswordHash = "different_hash",
-            PasswordSalt = "different_salt"
+            PasswordSalt = "different_salt",
         };
 
         await TestHelper.SeedUsersAsync(sqliteContext, user1);
 
         // Act & Assert - Should throw due to unique constraint violation
-        await Assert.ThrowsAsync<DbUpdateException>(
-            () => sqliteRepository.AddAsync(user2));
+        await Assert.ThrowsAsync<DbUpdateException>(() => sqliteRepository.AddAsync(user2));
     }
 
     [Fact]
@@ -332,13 +341,12 @@ public class UserRepositoryTests : IDisposable
             Username = "differentuser",
             Email = user1.Email, // Same email
             PasswordHash = "different_hash",
-            PasswordSalt = "different_salt"
+            PasswordSalt = "different_salt",
         };
 
         await TestHelper.SeedUsersAsync(sqliteContext, user1);
 
         // Act & Assert - Should throw due to unique constraint violation
-        await Assert.ThrowsAsync<DbUpdateException>(
-            () => sqliteRepository.AddAsync(user2));
+        await Assert.ThrowsAsync<DbUpdateException>(() => sqliteRepository.AddAsync(user2));
     }
 }

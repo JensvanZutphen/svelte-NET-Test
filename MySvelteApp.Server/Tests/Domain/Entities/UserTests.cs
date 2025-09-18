@@ -15,7 +15,7 @@ public class UserTests
             Username = "testuser",
             Email = "test@example.com",
             PasswordHash = "hash",
-            PasswordSalt = "salt"
+            PasswordSalt = "salt",
         };
 
         // Assert
@@ -43,7 +43,7 @@ public class UserTests
             Username = username,
             Email = email,
             PasswordHash = passwordHash,
-            PasswordSalt = passwordSalt
+            PasswordSalt = passwordSalt,
         };
 
         // Assert
@@ -76,7 +76,7 @@ public class UserTests
             Username = "orig",
             Email = "orig@example.com",
             PasswordHash = "origHash",
-            PasswordSalt = "origSalt"
+            PasswordSalt = "origSalt",
         };
 
         // Act
@@ -103,7 +103,7 @@ public class UserTests
             Username = "ok",
             Email = "e@example.com",
             PasswordHash = "h",
-            PasswordSalt = "s"
+            PasswordSalt = "s",
         };
 
         Action act = () => user.Username = (string?)value!;
@@ -121,7 +121,7 @@ public class UserTests
             Username = "ok",
             Email = "e@example.com",
             PasswordHash = "h",
-            PasswordSalt = "s"
+            PasswordSalt = "s",
         };
 
         Action act = () => user.Email = (string?)value!;
@@ -139,7 +139,7 @@ public class UserTests
             Username = "ok",
             Email = "e@example.com",
             PasswordHash = "h",
-            PasswordSalt = "s"
+            PasswordSalt = "s",
         };
 
         Action act = () => user.PasswordHash = (string?)value!;
@@ -157,7 +157,7 @@ public class UserTests
             Username = "ok",
             Email = "e@example.com",
             PasswordHash = "h",
-            PasswordSalt = "s"
+            PasswordSalt = "s",
         };
 
         Action act = () => user.PasswordSalt = (string?)value!;
@@ -174,7 +174,7 @@ public class UserTests
             Username = "testuser",
             Email = "test@example.com",
             PasswordHash = "hash1",
-            PasswordSalt = "salt1"
+            PasswordSalt = "salt1",
         };
 
         var user2 = new User
@@ -183,7 +183,7 @@ public class UserTests
             Username = "testuser",
             Email = "test@example.com",
             PasswordHash = "hash1",
-            PasswordSalt = "salt1"
+            PasswordSalt = "salt1",
         };
 
         var user3 = new User
@@ -192,7 +192,7 @@ public class UserTests
             Username = "testuser",
             Email = "test@example.com",
             PasswordHash = "hash1",
-            PasswordSalt = "salt1"
+            PasswordSalt = "salt1",
         };
 
         // Assert - Reference equality (and default Equals)

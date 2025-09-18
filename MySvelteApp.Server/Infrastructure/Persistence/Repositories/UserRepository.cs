@@ -13,20 +13,34 @@ public class UserRepository : IUserRepository
         _dbContext = dbContext;
     }
 
-    public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
+    public async Task<User?> GetByUsernameAsync(
+        string username,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
+        return await _dbContext
+            .Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
     }
 
-    public async Task<bool> UsernameExistsAsync(string username, CancellationToken cancellationToken = default)
+    public async Task<bool> UsernameExistsAsync(
+        string username,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await _dbContext.Users.AsNoTracking().AnyAsync(u => u.Username == username, cancellationToken);
+        return await _dbContext
+            .Users.AsNoTracking()
+            .AnyAsync(u => u.Username == username, cancellationToken);
     }
 
-    public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken = default)
+    public async Task<bool> EmailExistsAsync(
+        string email,
+        CancellationToken cancellationToken = default
+    )
     {
         var normalizedEmail = email.Trim().ToLowerInvariant();
-        return await _dbContext.Users.AsNoTracking()
+        return await _dbContext
+            .Users.AsNoTracking()
             .AnyAsync(u => u.Email == normalizedEmail, cancellationToken);
     }
 

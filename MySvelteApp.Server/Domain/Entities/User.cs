@@ -50,7 +50,10 @@ public class User
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException("PasswordHash cannot be null or whitespace", nameof(value));
+                throw new ArgumentException(
+                    "PasswordHash cannot be null or whitespace",
+                    nameof(value)
+                );
             }
             _passwordHash = value;
         }
@@ -63,7 +66,10 @@ public class User
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                throw new ArgumentException("PasswordSalt cannot be null or whitespace", nameof(value));
+                throw new ArgumentException(
+                    "PasswordSalt cannot be null or whitespace",
+                    nameof(value)
+                );
             }
             _passwordSalt = value;
         }

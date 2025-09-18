@@ -8,8 +8,14 @@ namespace MySvelteApp.Server.Application.Authentication;
 public class AuthService : IAuthService
 {
     private static readonly Regex UsernameRegex = new("^[a-zA-Z0-9_]+$", RegexOptions.Compiled);
-    private static readonly Regex EmailRegex = new("^(?!.*\\.\\.)[^\\s@]+@[^\\s@.]+\\.[^\\s@.]+$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    private static readonly Regex PasswordRegex = new("(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)", RegexOptions.Compiled);
+    private static readonly Regex EmailRegex = new(
+        "^(?!.*\\.\\.)[^\\s@]+@[^\\s@.]+\\.[^\\s@.]+$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant
+    );
+    private static readonly Regex PasswordRegex = new(
+        "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)",
+        RegexOptions.Compiled
+    );
 
     // Max length constants that mirror EF persistence constraints
     private const int MaxUsernameLength = 64;
@@ -23,14 +29,18 @@ public class AuthService : IAuthService
     public AuthService(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
-        IJwtTokenGenerator jwtTokenGenerator)
+        IJwtTokenGenerator jwtTokenGenerator
+    )
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _jwtTokenGenerator = jwtTokenGenerator;
     }
 
-    public async Task<AuthResult> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+    public async Task<AuthResult> RegisterAsync(
+        RegisterRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var validationError = ValidateRegisterRequest(request);
         if (validationError is not null)
@@ -43,12 +53,18 @@ public class AuthService : IAuthService
 
         if (await _userRepository.UsernameExistsAsync(trimmedUsername, cancellationToken))
         {
-            return CreateError("This username is already taken. Please choose a different one.", AuthErrorType.Conflict);
+            return CreateError(
+                "This username is already taken. Please choose a different one.",
+                AuthErrorType.Conflict
+            );
         }
 
         if (await _userRepository.EmailExistsAsync(normalizedEmail, cancellationToken))
         {
-            return CreateError("This email is already registered. Please use a different email address.", AuthErrorType.Conflict);
+            return CreateError(
+                "This email is already registered. Please use a different email address.",
+                AuthErrorType.Conflict
+            );
         }
 
         var (hash, salt) = _passwordHasher.HashPassword(request.Password);
@@ -58,7 +74,7 @@ public class AuthService : IAuthService
             Username = trimmedUsername,
             Email = normalizedEmail,
             PasswordHash = hash,
-            PasswordSalt = salt
+            PasswordSalt = salt,
         };
 
         await _userRepository.AddAsync(user, cancellationToken);
@@ -70,11 +86,14 @@ public class AuthService : IAuthService
             Success = true,
             Token = token,
             UserId = user.Id,
-            Username = user.Username
+            Username = user.Username,
         };
     }
 
-    public async Task<AuthResult> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
+    public async Task<AuthResult> LoginAsync(
+        LoginRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var validationError = ValidateLoginRequest(request);
         if (validationError is not null)
@@ -90,7 +109,11 @@ public class AuthService : IAuthService
             return CreateUnauthorized();
         }
 
-        var passwordValid = _passwordHasher.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt);
+        var passwordValid = _passwordHasher.VerifyPassword(
+            request.Password,
+            user.PasswordHash,
+            user.PasswordSalt
+        );
         if (!passwordValid)
         {
             return CreateUnauthorized();
@@ -103,58 +126,64 @@ public class AuthService : IAuthService
             Success = true,
             Token = token,
             UserId = user.Id,
-            Username = user.Username
+            Username = user.Username,
         };
     }
 
-    private static (string Message, AuthErrorType Type)? ValidateRegisterRequest(RegisterRequest request)
+    private static (string Message, AuthErrorType Type)? ValidateRegisterRequest(
+        RegisterRequest request
+    )
     {
         var username = request.Username?.Trim();
         var email = request.Email?.Trim();
 
-        if (string.IsNullOrWhiteSpace(username))
-        {
-            return ("Username is required.", AuthErrorType.Validation);
-        }
-
-        if (username.Length < 3)
-        {
-            return ("Username must be at least 3 characters long.", AuthErrorType.Validation);
-        }
-
-        if (username.Length > MaxUsernameLength)
-        {
-            return ($"Username must not exceed {MaxUsernameLength} characters.", AuthErrorType.Validation);
-        }
-
-        if (!UsernameRegex.IsMatch(username))
-        {
-            return ("Username can only contain letters, numbers, and underscores.", AuthErrorType.Validation);
-        }
-
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            return ("Email is required.", AuthErrorType.Validation);
-        }
-
-        if (email.Length > MaxEmailLength)
-        {
-            return ($"Email must not exceed {MaxEmailLength} characters.", AuthErrorType.Validation);
-        }
-
-        if (!EmailRegex.IsMatch(email))
-        {
-            return ("Please enter a valid email address.", AuthErrorType.Validation);
-        }
-
-        return string.IsNullOrWhiteSpace(request.Password)
-            ? ((string Message, AuthErrorType Type)?)("Password is required.", AuthErrorType.Validation)
+        return string.IsNullOrWhiteSpace(username)
+                ? ((string Message, AuthErrorType Type)?)
+                    ("Username is required.", AuthErrorType.Validation)
+            : username.Length < 3
+                ? ((string Message, AuthErrorType Type)?)
+                    ("Username must be at least 3 characters long.", AuthErrorType.Validation)
+            : username.Length > MaxUsernameLength
+                ? ((string Message, AuthErrorType Type)?)
+                    (
+                        $"Username must not exceed {MaxUsernameLength} characters.",
+                        AuthErrorType.Validation
+                    )
+            : !UsernameRegex.IsMatch(username)
+                ? ((string Message, AuthErrorType Type)?)
+                    (
+                        "Username can only contain letters, numbers, and underscores.",
+                        AuthErrorType.Validation
+                    )
+            : string.IsNullOrWhiteSpace(email)
+                ? ((string Message, AuthErrorType Type)?)
+                    ("Email is required.", AuthErrorType.Validation)
+            : email.Length > MaxEmailLength
+                ? ((string Message, AuthErrorType Type)?)
+                    (
+                        $"Email must not exceed {MaxEmailLength} characters.",
+                        AuthErrorType.Validation
+                    )
+            : !EmailRegex.IsMatch(email)
+                ? ((string Message, AuthErrorType Type)?)
+                    ("Please enter a valid email address.", AuthErrorType.Validation)
+            : string.IsNullOrWhiteSpace(request.Password)
+                ? ((string Message, AuthErrorType Type)?)
+                    ("Password is required.", AuthErrorType.Validation)
             : request.Password.Length < 8
-            ? ((string Message, AuthErrorType Type)?)("Password must be at least 8 characters long.", AuthErrorType.Validation)
+                ? ((string Message, AuthErrorType Type)?)
+                    ("Password must be at least 8 characters long.", AuthErrorType.Validation)
             : request.Password.Length > MaxPasswordLength
-            ? ((string Message, AuthErrorType Type)?)($"Password must not exceed {MaxPasswordLength} characters.", AuthErrorType.Validation)
+                ? ((string Message, AuthErrorType Type)?)
+                    (
+                        $"Password must not exceed {MaxPasswordLength} characters.",
+                        AuthErrorType.Validation
+                    )
             : !PasswordRegex.IsMatch(request.Password)
-            ? ("Password must contain at least one uppercase letter, one lowercase letter, and one number.", AuthErrorType.Validation)
+                ? (
+                    "Password must contain at least one uppercase letter, one lowercase letter, and one number.",
+                    AuthErrorType.Validation
+                )
             : null;
     }
 
@@ -162,8 +191,11 @@ public class AuthService : IAuthService
     {
         var username = request.Username?.Trim();
         return string.IsNullOrWhiteSpace(username)
-            ? ((string Message, AuthErrorType Type)?)("Username is required.", AuthErrorType.Validation)
-            : string.IsNullOrWhiteSpace(request.Password) ? ("Password is required.", AuthErrorType.Validation) : null;
+                ? ((string Message, AuthErrorType Type)?)
+                    ("Username is required.", AuthErrorType.Validation)
+            : string.IsNullOrWhiteSpace(request.Password)
+                ? ("Password is required.", AuthErrorType.Validation)
+            : null;
     }
 
     private static AuthResult CreateError(string message, AuthErrorType errorType)
@@ -172,7 +204,7 @@ public class AuthService : IAuthService
         {
             Success = false,
             ErrorMessage = message,
-            ErrorType = errorType
+            ErrorType = errorType,
         };
     }
 
@@ -181,8 +213,9 @@ public class AuthService : IAuthService
         return new AuthResult
         {
             Success = false,
-            ErrorMessage = "Invalid username or password. Please check your credentials and try again.",
-            ErrorType = AuthErrorType.Unauthorized
+            ErrorMessage =
+                "Invalid username or password. Please check your credentials and try again.",
+            ErrorType = AuthErrorType.Unauthorized,
         };
     }
 }

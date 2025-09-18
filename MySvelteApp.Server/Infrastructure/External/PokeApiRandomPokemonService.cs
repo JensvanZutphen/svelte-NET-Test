@@ -14,7 +14,9 @@ public class PokeApiRandomPokemonService : IRandomPokemonService
         _httpClient = httpClient;
     }
 
-    public async Task<RandomPokemonDto> GetRandomPokemonAsync(CancellationToken cancellationToken = default)
+    public async Task<RandomPokemonDto> GetRandomPokemonAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         var count = await GetPokemonCountAsync(cancellationToken);
         var randomPokemon = Random.Shared.Next(1, count + 1);
@@ -22,24 +24,35 @@ public class PokeApiRandomPokemonService : IRandomPokemonService
 
         using var pokemonResponse = await _httpClient.GetAsync(pokemonUrl, cancellationToken);
         pokemonResponse.EnsureSuccessStatusCode();
-        await using var pokemonContent = await pokemonResponse.Content.ReadAsStreamAsync(cancellationToken);
-        var pokeApi = await JsonSerializer.DeserializeAsync<PokeApiResponse>(pokemonContent, cancellationToken: cancellationToken);
+        await using var pokemonContent = await pokemonResponse.Content.ReadAsStreamAsync(
+            cancellationToken
+        );
+        var pokeApi = await JsonSerializer.DeserializeAsync<PokeApiResponse>(
+            pokemonContent,
+            cancellationToken: cancellationToken
+        );
         return pokeApi is null
             ? throw new InvalidOperationException("Failed to deserialize Pokemon data.")
             : new RandomPokemonDto
             {
                 Name = pokeApi.name,
                 Type = string.Join(", ", pokeApi.types.Select(t => t.type.name)),
-                Image = pokeApi.sprites.front_default
+                Image = pokeApi.sprites.front_default,
             };
     }
 
     private async Task<int> GetPokemonCountAsync(CancellationToken cancellationToken)
     {
-        using var response = await _httpClient.GetAsync("https://pokeapi.co/api/v2/pokemon-species/?limit=0", cancellationToken);
+        using var response = await _httpClient.GetAsync(
+            "https://pokeapi.co/api/v2/pokemon-species/?limit=0",
+            cancellationToken
+        );
         response.EnsureSuccessStatusCode();
         await using var content = await response.Content.ReadAsStreamAsync(cancellationToken);
-        using var document = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken);
+        using var document = await JsonDocument.ParseAsync(
+            content,
+            cancellationToken: cancellationToken
+        );
         return document.RootElement.GetProperty("count").GetInt32();
     }
 

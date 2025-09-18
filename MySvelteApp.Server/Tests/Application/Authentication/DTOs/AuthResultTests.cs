@@ -35,7 +35,7 @@ public class AuthResultTests
             Success = true,
             UserId = userId,
             Username = username,
-            Token = token
+            Token = token,
         };
 
         // Assert
@@ -59,7 +59,7 @@ public class AuthResultTests
         {
             Success = false,
             ErrorMessage = errorMessage,
-            ErrorType = errorType
+            ErrorType = errorType,
         };
 
         // Assert
@@ -82,7 +82,7 @@ public class AuthResultTests
             Username = "testuser",
             Token = "jwt.token",
             ErrorMessage = "error",
-            ErrorType = AuthErrorType.Validation
+            ErrorType = AuthErrorType.Validation,
         };
 
         // Act & Assert - Values set via object initializer should persist

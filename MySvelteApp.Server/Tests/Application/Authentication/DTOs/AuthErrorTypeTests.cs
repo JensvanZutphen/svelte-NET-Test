@@ -6,7 +6,6 @@ namespace MySvelteApp.Server.Tests.Application.Authentication.DTOs;
 
 public class AuthErrorTypeTests
 {
-
     [Fact]
     public void AuthErrorType_ShouldHaveCorrectNames()
     {
@@ -36,7 +35,9 @@ public class AuthErrorTypeTests
     public void AuthErrorType_ShouldBeConvertibleFromInt()
     {
         // Act & Assert
-        ((AuthErrorType)0).Should().Be(AuthErrorType.None);
+        ((AuthErrorType)0)
+            .Should()
+            .Be(AuthErrorType.None);
         ((AuthErrorType)1).Should().Be(AuthErrorType.Validation);
         ((AuthErrorType)2).Should().Be(AuthErrorType.Conflict);
         ((AuthErrorType)3).Should().Be(AuthErrorType.Unauthorized);

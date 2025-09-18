@@ -24,7 +24,10 @@ public class AuthServiceValidationTests
 
         if (!System.Text.RegularExpressions.Regex.IsMatch(username, "^[a-zA-Z0-9_]+$"))
         {
-            return ("Username can only contain letters, numbers, and underscores.", AuthErrorType.Validation);
+            return (
+                "Username can only contain letters, numbers, and underscores.",
+                AuthErrorType.Validation
+            );
         }
 
         return null;
@@ -37,7 +40,12 @@ public class AuthServiceValidationTests
             return ("Email is required.", AuthErrorType.Validation);
         }
 
-        if (!System.Text.RegularExpressions.Regex.IsMatch(email, "^(?!.*\\.\\.)[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"))
+        if (
+            !System.Text.RegularExpressions.Regex.IsMatch(
+                email,
+                "^(?!.*\\.\\.)[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+            )
+        )
         {
             return ("Please enter a valid email address.", AuthErrorType.Validation);
         }
@@ -57,9 +65,17 @@ public class AuthServiceValidationTests
             return ("Password must be at least 8 characters long.", AuthErrorType.Validation);
         }
 
-        if (!System.Text.RegularExpressions.Regex.IsMatch(password, "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)"))
+        if (
+            !System.Text.RegularExpressions.Regex.IsMatch(
+                password,
+                "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)"
+            )
+        )
         {
-            return ("Password must contain at least one uppercase letter, one lowercase letter, and one number.", AuthErrorType.Validation);
+            return (
+                "Password must contain at least one uppercase letter, one lowercase letter, and one number.",
+                AuthErrorType.Validation
+            );
         }
 
         return null;
@@ -72,7 +88,9 @@ public class AuthServiceValidationTests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public void ValidateUsername_WithNullOrWhitespace_ShouldReturnValidationError(string username)
+        public void ValidateUsername_WithNullOrWhitespace_ShouldReturnValidationError(
+            string username
+        )
         {
             // Act
             var result = ValidateUsername(username);
@@ -87,7 +105,9 @@ public class AuthServiceValidationTests
         [Theory]
         [InlineData("a")]
         [InlineData("ab")]
-        public void ValidateUsername_WithTooShortUsername_ShouldReturnValidationError(string username)
+        public void ValidateUsername_WithTooShortUsername_ShouldReturnValidationError(
+            string username
+        )
         {
             // Act
             var result = ValidateUsername(username);
@@ -104,14 +124,18 @@ public class AuthServiceValidationTests
         [InlineData("user.name")]
         [InlineData("user name")]
         [InlineData("user!name")]
-        public void ValidateUsername_WithInvalidCharacters_ShouldReturnValidationError(string username)
+        public void ValidateUsername_WithInvalidCharacters_ShouldReturnValidationError(
+            string username
+        )
         {
             // Act
             var result = ValidateUsername(username);
 
             // Assert
             result.Should().NotBeNull();
-            result!.Value.Message.Should().Be("Username can only contain letters, numbers, and underscores.");
+            result!
+                .Value.Message.Should()
+                .Be("Username can only contain letters, numbers, and underscores.");
             result!.Value.Type.Should().Be(AuthErrorType.Validation);
         }
 
@@ -180,7 +204,7 @@ public class AuthServiceValidationTests
             // Assert
             result.Should().BeNull();
         }
-        
+
         [Theory]
         [InlineData("user..user@example.com")]
         public void ValidateEmail_WithDoubleDotLocalPart_ShouldReturnValidationError(string email)
@@ -198,7 +222,9 @@ public class AuthServiceValidationTests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public void ValidatePassword_WithNullOrWhitespace_ShouldReturnValidationError(string password)
+        public void ValidatePassword_WithNullOrWhitespace_ShouldReturnValidationError(
+            string password
+        )
         {
             // Act
             var result = ValidatePassword(password);
@@ -215,7 +241,9 @@ public class AuthServiceValidationTests
         [InlineData("abcdefg")]
         [InlineData("ABCDEFG")]
         [InlineData("!@#$%^&")]
-        public void ValidatePassword_WithTooShortPassword_ShouldReturnValidationError(string password)
+        public void ValidatePassword_WithTooShortPassword_ShouldReturnValidationError(
+            string password
+        )
         {
             // Act
             var result = ValidatePassword(password);
@@ -234,14 +262,20 @@ public class AuthServiceValidationTests
         [InlineData("password123")]
         [InlineData("PASSWORD123")]
         [InlineData("Password!@#")]
-        public void ValidatePassword_WithMissingCharacterTypes_ShouldReturnValidationError(string password)
+        public void ValidatePassword_WithMissingCharacterTypes_ShouldReturnValidationError(
+            string password
+        )
         {
             // Act
             var result = ValidatePassword(password);
 
             // Assert
             result.Should().NotBeNull();
-            result!.Value.Message.Should().Be("Password must contain at least one uppercase letter, one lowercase letter, and one number.");
+            result!
+                .Value.Message.Should()
+                .Be(
+                    "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+                );
             result!.Value.Type.Should().Be(AuthErrorType.Validation);
         }
 

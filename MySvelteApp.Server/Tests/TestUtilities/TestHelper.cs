@@ -1,9 +1,9 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MySvelteApp.Server.Domain.Entities;
 using MySvelteApp.Server.Infrastructure.Authentication;
 using MySvelteApp.Server.Infrastructure.Persistence;
-using Microsoft.Data.Sqlite;
 
 namespace MySvelteApp.Server.Tests.TestUtilities;
 
@@ -24,9 +24,7 @@ public static class TestHelper
         var connection = new SqliteConnection("Filename=:memory:");
         connection.Open();
 
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite(connection)
-            .Options;
+        var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
 
         var context = new AppDbContext(options);
         context.Database.EnsureCreated();
@@ -35,13 +33,15 @@ public static class TestHelper
     }
 
     public static IOptions<JwtOptions> CreateJwtOptions() =>
-        Options.Create(new JwtOptions
-        {
-            Key = TestData.Jwt.ValidKey,
-            Issuer = TestData.Jwt.ValidIssuer,
-            Audience = TestData.Jwt.ValidAudience,
-            AccessTokenLifetimeHours = TestData.Jwt.ValidLifetimeHours
-        });
+        Options.Create(
+            new JwtOptions
+            {
+                Key = TestData.Jwt.ValidKey,
+                Issuer = TestData.Jwt.ValidIssuer,
+                Audience = TestData.Jwt.ValidAudience,
+                AccessTokenLifetimeHours = TestData.Jwt.ValidLifetimeHours,
+            }
+        );
 
     public static async Task SeedUsersAsync(AppDbContext context, params User[] users)
     {

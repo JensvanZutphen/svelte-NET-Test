@@ -1,10 +1,10 @@
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MySvelteApp.Server.Domain.Entities;
 using MySvelteApp.Server.Infrastructure.Authentication;
 using MySvelteApp.Server.Tests.TestUtilities;
@@ -40,7 +40,12 @@ public class JwtTokenGeneratorTests
 
         jwtToken.Issuer.Should().Be(_jwtOptions.Value.Issuer);
         jwtToken.Audiences.Should().Contain(_jwtOptions.Value.Audience);
-        jwtToken.ValidTo.Should().BeCloseTo(DateTime.UtcNow.AddHours(_jwtOptions.Value.AccessTokenLifetimeHours), TimeSpan.FromMinutes(1));
+        jwtToken
+            .ValidTo.Should()
+            .BeCloseTo(
+                DateTime.UtcNow.AddHours(_jwtOptions.Value.AccessTokenLifetimeHours),
+                TimeSpan.FromMinutes(1)
+            );
 
         // Build the signing key similar to JwtTokenGenerator
         var keyString = _jwtOptions.Value.Key;
@@ -57,7 +62,7 @@ public class JwtTokenGeneratorTests
             ValidateAudience = true,
             ValidAudience = _jwtOptions.Value.Audience,
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(1)
+            ClockSkew = TimeSpan.FromMinutes(1),
         };
 
         new JwtSecurityTokenHandler().ValidateToken(token, validationParams, out _);
@@ -78,8 +83,12 @@ public class JwtTokenGeneratorTests
 
         var claims = jwtToken.Claims.ToList();
 
-        claims.Should().Contain(c => c.Type == ClaimTypes.NameIdentifier && c.Value == user.Id.ToString());
-        claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == user.Id.ToString());
+        claims
+            .Should()
+            .Contain(c => c.Type == ClaimTypes.NameIdentifier && c.Value == user.Id.ToString());
+        claims
+            .Should()
+            .Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == user.Id.ToString());
         claims.Should().Contain(c => c.Type == ClaimTypes.Name && c.Value == user.Username);
         claims.Count(c => c.Type == JwtRegisteredClaimNames.Jti).Should().BeGreaterThan(0);
         claims.First(c => c.Type == JwtRegisteredClaimNames.Jti).Value.Should().NotBeNullOrEmpty();
@@ -118,7 +127,7 @@ public class JwtTokenGeneratorTests
             Username = TestData.Users.ValidUser.Username,
             Email = TestData.Users.ValidUser.Email,
             PasswordHash = TestData.Users.ValidUser.PasswordHash,
-            PasswordSalt = TestData.Users.ValidUser.PasswordSalt
+            PasswordSalt = TestData.Users.ValidUser.PasswordSalt,
         };
         var user2 = new User
         {
@@ -126,7 +135,7 @@ public class JwtTokenGeneratorTests
             Username = TestData.Users.AnotherValidUser.Username,
             Email = TestData.Users.AnotherValidUser.Email,
             PasswordHash = TestData.Users.AnotherValidUser.PasswordHash,
-            PasswordSalt = TestData.Users.AnotherValidUser.PasswordSalt
+            PasswordSalt = TestData.Users.AnotherValidUser.PasswordSalt,
         };
 
         // Act
@@ -141,23 +150,29 @@ public class JwtTokenGeneratorTests
         var claims1 = jwtToken1.Claims.ToList();
         var claims2 = jwtToken2.Claims.ToList();
 
-        claims1.First(c => c.Type == ClaimTypes.NameIdentifier).Value
-            .Should().NotBe(claims2.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
-        claims1.First(c => c.Type == ClaimTypes.Name).Value
-            .Should().NotBe(claims2.First(c => c.Type == ClaimTypes.Name).Value);
+        claims1
+            .First(c => c.Type == ClaimTypes.NameIdentifier)
+            .Value.Should()
+            .NotBe(claims2.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
+        claims1
+            .First(c => c.Type == ClaimTypes.Name)
+            .Value.Should()
+            .NotBe(claims2.First(c => c.Type == ClaimTypes.Name).Value);
     }
 
     [Fact]
     public void GenerateToken_WithBase64Key_ShouldWorkCorrectly()
     {
         // Arrange
-        var jwtOptions = Options.Create(new JwtOptions
-        {
-            Key = TestData.Jwt.ValidKey, // base64 encoded key
-            Issuer = TestData.Jwt.ValidIssuer,
-            Audience = TestData.Jwt.ValidAudience,
-            AccessTokenLifetimeHours = TestData.Jwt.ValidLifetimeHours
-        });
+        var jwtOptions = Options.Create(
+            new JwtOptions
+            {
+                Key = TestData.Jwt.ValidKey, // base64 encoded key
+                Issuer = TestData.Jwt.ValidIssuer,
+                Audience = TestData.Jwt.ValidAudience,
+                AccessTokenLifetimeHours = TestData.Jwt.ValidLifetimeHours,
+            }
+        );
 
         var generator = new JwtTokenGenerator(jwtOptions);
         var user = TestData.Users.ValidUser;
@@ -188,7 +203,7 @@ public class JwtTokenGeneratorTests
             ValidateAudience = true,
             ValidAudience = jwtOptions.Value.Audience,
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(1)
+            ClockSkew = TimeSpan.FromMinutes(1),
         };
         new JwtSecurityTokenHandler().ValidateToken(token, validationParams, out _);
     }
@@ -198,13 +213,15 @@ public class JwtTokenGeneratorTests
     {
         // Arrange
         var longPlainKey = TestData.Jwt.ValidPlainTextKey;
-        var jwtOptions = Options.Create(new JwtOptions
-        {
-            Key = longPlainKey,
-            Issuer = TestData.Jwt.ValidIssuer,
-            Audience = TestData.Jwt.ValidAudience,
-            AccessTokenLifetimeHours = TestData.Jwt.ValidLifetimeHours
-        });
+        var jwtOptions = Options.Create(
+            new JwtOptions
+            {
+                Key = longPlainKey,
+                Issuer = TestData.Jwt.ValidIssuer,
+                Audience = TestData.Jwt.ValidAudience,
+                AccessTokenLifetimeHours = TestData.Jwt.ValidLifetimeHours,
+            }
+        );
 
         var generator = new JwtTokenGenerator(jwtOptions);
         var user = TestData.Users.ValidUser;
@@ -232,7 +249,7 @@ public class JwtTokenGeneratorTests
             ValidateAudience = true,
             ValidAudience = jwtOptions.Value.Audience,
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(1)
+            ClockSkew = TimeSpan.FromMinutes(1),
         };
         new JwtSecurityTokenHandler().ValidateToken(token, validationParams, out _);
     }
@@ -251,7 +268,9 @@ public class JwtTokenGeneratorTests
         var tokenHandler = new JwtSecurityTokenHandler();
         var jwtToken = tokenHandler.ReadJwtToken(token);
 
-        var expectedExpiration = beforeGeneration.AddHours(_jwtOptions.Value.AccessTokenLifetimeHours);
+        var expectedExpiration = beforeGeneration.AddHours(
+            _jwtOptions.Value.AccessTokenLifetimeHours
+        );
         jwtToken.ValidTo.Should().BeCloseTo(expectedExpiration, TimeSpan.FromMinutes(1));
     }
 

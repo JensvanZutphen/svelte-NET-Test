@@ -21,17 +21,22 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(AuthSuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(AuthErrorResponse), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Register(
+        [FromBody] RegisterRequest request,
+        CancellationToken cancellationToken
+    )
     {
         var result = await _authService.RegisterAsync(request, cancellationToken);
         return !result.Success
             ? ToErrorResponse(result)
-            : Ok(new AuthSuccessResponse
-            {
-                Token = result.Token ?? string.Empty,
-                UserId = result.UserId ?? 0,
-                Username = result.Username ?? string.Empty
-            });
+            : Ok(
+                new AuthSuccessResponse
+                {
+                    Token = result.Token ?? string.Empty,
+                    UserId = result.UserId ?? 0,
+                    Username = result.Username ?? string.Empty,
+                }
+            );
     }
 
     [HttpPost("login")]
@@ -39,17 +44,22 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(AuthSuccessResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(AuthErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(AuthErrorResponse), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Login(
+        [FromBody] LoginRequest request,
+        CancellationToken cancellationToken
+    )
     {
         var result = await _authService.LoginAsync(request, cancellationToken);
         return !result.Success
             ? ToErrorResponse(result)
-            : Ok(new AuthSuccessResponse
-            {
-                Token = result.Token ?? string.Empty,
-                UserId = result.UserId ?? 0,
-                Username = result.Username ?? string.Empty
-            });
+            : Ok(
+                new AuthSuccessResponse
+                {
+                    Token = result.Token ?? string.Empty,
+                    UserId = result.UserId ?? 0,
+                    Username = result.Username ?? string.Empty,
+                }
+            );
     }
 
     private IActionResult ToErrorResponse(AuthResult result)
@@ -57,8 +67,10 @@ public class AuthController : ControllerBase
         var errorMessage = result.ErrorMessage ?? "An unknown error occurred.";
         return result.ErrorType switch
         {
-            AuthErrorType.Unauthorized => Unauthorized(new AuthErrorResponse { Message = errorMessage }),
-            _ => BadRequest(new AuthErrorResponse { Message = errorMessage })
+            AuthErrorType.Unauthorized => Unauthorized(
+                new AuthErrorResponse { Message = errorMessage }
+            ),
+            _ => BadRequest(new AuthErrorResponse { Message = errorMessage }),
         };
     }
 }

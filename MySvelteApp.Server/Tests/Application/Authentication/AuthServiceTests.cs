@@ -25,7 +25,8 @@ public class AuthServiceTests
         _authService = new AuthService(
             _userRepositoryMock.Object,
             _passwordHasherMock.Object,
-            _jwtTokenGeneratorMock.Object);
+            _jwtTokenGeneratorMock.Object
+        );
     }
 
     public class RegisterAsyncTests : AuthServiceTests
@@ -61,17 +62,30 @@ public class AuthServiceTests
             result.ErrorMessage.Should().BeNull();
             result.ErrorType.Should().Be(AuthErrorType.None);
 
-            _userRepositoryMock.Verify(x => x.AddAsync(It.Is<User>(u =>
-                u.Username == request.Username &&
-                u.Email == request.Email.ToLowerInvariant() &&
-                u.PasswordHash == "hashed_password" &&
-                u.PasswordSalt == "salt"), default), Times.Once);
+            _userRepositoryMock.Verify(
+                x =>
+                    x.AddAsync(
+                        It.Is<User>(u =>
+                            u.Username == request.Username
+                            && u.Email == request.Email.ToLowerInvariant()
+                            && u.PasswordHash == "hashed_password"
+                            && u.PasswordSalt == "salt"
+                        ),
+                        default
+                    ),
+                Times.Once
+            );
         }
 
         [Fact]
         public async Task RegisterAsync_ShouldTrimUsername()
         {
-            var request = new RegisterRequest { Username = "  testuser  ", Email = "TEST@EXAMPLE.COM", Password = "ValidPassword123" };
+            var request = new RegisterRequest
+            {
+                Username = "  testuser  ",
+                Email = "TEST@EXAMPLE.COM",
+                Password = "ValidPassword123",
+            };
             const string expectedToken = "generated.jwt.token";
 
             _userRepositoryMock
@@ -91,7 +105,10 @@ public class AuthServiceTests
 
             result.Success.Should().BeTrue();
             result.Username.Should().Be("testuser");
-            _userRepositoryMock.Verify(x => x.AddAsync(It.Is<User>(u => u.Username == "testuser"), default), Times.Once);
+            _userRepositoryMock.Verify(
+                x => x.AddAsync(It.Is<User>(u => u.Username == "testuser"), default),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -114,7 +131,10 @@ public class AuthServiceTests
             result.Token.Should().BeNull();
             result.UserId.Should().BeNull();
 
-            _userRepositoryMock.Verify(x => x.EmailExistsAsync(It.IsAny<string>(), default), Times.Never);
+            _userRepositoryMock.Verify(
+                x => x.EmailExistsAsync(It.IsAny<string>(), default),
+                Times.Never
+            );
             _passwordHasherMock.Verify(x => x.HashPassword(It.IsAny<string>()), Times.Never);
             _userRepositoryMock.Verify(x => x.AddAsync(It.IsAny<User>(), default), Times.Never);
         }
@@ -158,7 +178,10 @@ public class AuthServiceTests
             result.ErrorMessage.Should().Contain("at least 3 characters");
             result.ErrorType.Should().Be(AuthErrorType.Validation);
 
-            _userRepositoryMock.Verify(x => x.UsernameExistsAsync(It.IsAny<string>(), default), Times.Never);
+            _userRepositoryMock.Verify(
+                x => x.UsernameExistsAsync(It.IsAny<string>(), default),
+                Times.Never
+            );
         }
 
         [Fact]
@@ -195,7 +218,12 @@ public class AuthServiceTests
         public async Task RegisterAsync_WithEmptyUsername_ShouldReturnValidationError()
         {
             // Arrange
-            var request = new RegisterRequest { Username = "", Email = "test@example.com", Password = "ValidPassword123" };
+            var request = new RegisterRequest
+            {
+                Username = "",
+                Email = "test@example.com",
+                Password = "ValidPassword123",
+            };
 
             // Act
             var result = await _authService.RegisterAsync(request);
@@ -210,7 +238,12 @@ public class AuthServiceTests
         public async Task RegisterAsync_WithNullEmail_ShouldReturnValidationError()
         {
             // Arrange
-            var request = new RegisterRequest { Username = "testuser", Email = null!, Password = "ValidPassword123" };
+            var request = new RegisterRequest
+            {
+                Username = "testuser",
+                Email = null!,
+                Password = "ValidPassword123",
+            };
 
             // Act
             var result = await _authService.RegisterAsync(request);
@@ -225,7 +258,12 @@ public class AuthServiceTests
         public async Task RegisterAsync_WithNullPassword_ShouldReturnValidationError()
         {
             // Arrange
-            var request = new RegisterRequest { Username = "testuser", Email = "test@example.com", Password = null! };
+            var request = new RegisterRequest
+            {
+                Username = "testuser",
+                Email = "test@example.com",
+                Password = null!,
+            };
 
             // Act
             var result = await _authService.RegisterAsync(request);
@@ -240,7 +278,12 @@ public class AuthServiceTests
         public async Task RegisterAsync_WithUsernameContainingInvalidChars_ShouldReturnValidationError()
         {
             // Arrange
-            var request = new RegisterRequest { Username = "test@user", Email = "test@example.com", Password = "ValidPassword123" };
+            var request = new RegisterRequest
+            {
+                Username = "test@user",
+                Email = "test@example.com",
+                Password = "ValidPassword123",
+            };
 
             // Act
             var result = await _authService.RegisterAsync(request);
@@ -259,7 +302,7 @@ public class AuthServiceTests
             {
                 Username = "testuser",
                 Email = "Test@Example.COM",
-                Password = "ValidPassword123"
+                Password = "ValidPassword123",
             };
 
             _userRepositoryMock
@@ -271,17 +314,20 @@ public class AuthServiceTests
             _passwordHasherMock
                 .Setup(x => x.HashPassword(request.Password))
                 .Returns(("hashed_password", "salt"));
-            _jwtTokenGeneratorMock
-                .Setup(x => x.GenerateToken(It.IsAny<User>()))
-                .Returns("token");
+            _jwtTokenGeneratorMock.Setup(x => x.GenerateToken(It.IsAny<User>())).Returns("token");
 
             // Act
             await _authService.RegisterAsync(request);
 
             // Assert
-            _userRepositoryMock.Verify(x => x.AddAsync(It.Is<User>(u =>
-                u.Username == "testuser" &&
-                u.Email == "test@example.com"), default), Times.Once);
+            _userRepositoryMock.Verify(
+                x =>
+                    x.AddAsync(
+                        It.Is<User>(u => u.Username == "testuser" && u.Email == "test@example.com"),
+                        default
+                    ),
+                Times.Once
+            );
         }
     }
 
@@ -299,11 +345,11 @@ public class AuthServiceTests
                 .Setup(x => x.GetByUsernameAsync(request.Username, default))
                 .ReturnsAsync(user);
             _passwordHasherMock
-                .Setup(x => x.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
+                .Setup(x =>
+                    x.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt)
+                )
                 .Returns(true);
-            _jwtTokenGeneratorMock
-                .Setup(x => x.GenerateToken(user))
-                .Returns(expectedToken);
+            _jwtTokenGeneratorMock.Setup(x => x.GenerateToken(user)).Returns(expectedToken);
 
             // Act
             var result = await _authService.LoginAsync(request);
@@ -333,7 +379,10 @@ public class AuthServiceTests
             result.ErrorMessage.Should().Contain("Invalid username or password");
             result.ErrorType.Should().Be(AuthErrorType.Unauthorized);
 
-            _passwordHasherMock.Verify(x => x.VerifyPassword(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _passwordHasherMock.Verify(
+                x => x.VerifyPassword(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never
+            );
         }
 
         [Fact]
@@ -347,7 +396,9 @@ public class AuthServiceTests
                 .Setup(x => x.GetByUsernameAsync(request.Username, default))
                 .ReturnsAsync(user);
             _passwordHasherMock
-                .Setup(x => x.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
+                .Setup(x =>
+                    x.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt)
+                )
                 .Returns(false);
 
             // Act
@@ -375,7 +426,10 @@ public class AuthServiceTests
             result.ErrorMessage.Should().Contain("Username is required");
             result.ErrorType.Should().Be(AuthErrorType.Validation);
 
-            _userRepositoryMock.Verify(x => x.GetByUsernameAsync(It.IsAny<string>(), default), Times.Never);
+            _userRepositoryMock.Verify(
+                x => x.GetByUsernameAsync(It.IsAny<string>(), default),
+                Times.Never
+            );
         }
 
         [Fact]
@@ -404,11 +458,11 @@ public class AuthServiceTests
                 .Setup(x => x.GetByUsernameAsync("testuser", default))
                 .ReturnsAsync(user);
             _passwordHasherMock
-                .Setup(x => x.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
+                .Setup(x =>
+                    x.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt)
+                )
                 .Returns(true);
-            _jwtTokenGeneratorMock
-                .Setup(x => x.GenerateToken(user))
-                .Returns("token");
+            _jwtTokenGeneratorMock.Setup(x => x.GenerateToken(user)).Returns("token");
 
             // Act
             await _authService.LoginAsync(request);

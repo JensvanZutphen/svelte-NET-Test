@@ -7,8 +7,8 @@ namespace MySvelteApp.Server.Infrastructure.Security;
 public class PasswordHasher : IPasswordHasher
 {
     private const int SaltSize = 16;
-    private const int KeySize = 64;           // bytes
-    private const int Iterations = 100_000;   // consider higher or configurable
+    private const int KeySize = 64; // bytes
+    private const int Iterations = 100_000; // consider higher or configurable
 
     public (string Hash, string Salt) HashPassword(string password)
     {
@@ -18,7 +18,8 @@ public class PasswordHasher : IPasswordHasher
             salt,
             Iterations,
             HashAlgorithmName.SHA512,
-            KeySize);
+            KeySize
+        );
         return (Convert.ToBase64String(hash), Convert.ToBase64String(salt));
     }
 
@@ -31,7 +32,8 @@ public class PasswordHasher : IPasswordHasher
             saltBytes,
             Iterations,
             HashAlgorithmName.SHA512,
-            KeySize);
+            KeySize
+        );
         return CryptographicOperations.FixedTimeEquals(computed, storedHash);
     }
 }

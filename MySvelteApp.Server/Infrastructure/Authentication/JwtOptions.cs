@@ -47,11 +47,17 @@ public sealed class JwtOptions
     public string Key { get; set; } = string.Empty;
 
     [Required]
-    [CustomValidation(typeof(JwtOptionsValidator), nameof(JwtOptionsValidator.ValidateNotWhitespace))]
+    [CustomValidation(
+        typeof(JwtOptionsValidator),
+        nameof(JwtOptionsValidator.ValidateNotWhitespace)
+    )]
     public string Issuer { get; set; } = string.Empty;
 
     [Required]
-    [CustomValidation(typeof(JwtOptionsValidator), nameof(JwtOptionsValidator.ValidateNotWhitespace))]
+    [CustomValidation(
+        typeof(JwtOptionsValidator),
+        nameof(JwtOptionsValidator.ValidateNotWhitespace)
+    )]
     public string Audience { get; set; } = string.Empty;
 
     /// <summary>
