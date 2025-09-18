@@ -70,7 +70,10 @@ export const login = form(async (formData) => {
 		return result;
 	} catch (err) {
 		console.error('Login error:', err);
-		const enhancedError = resolveAuthError(err, 'Network error. Please check your connection and try again.');
+		const enhancedError = resolveAuthError(
+			err,
+			'Network error. Please check your connection and try again.'
+		);
 		throw error(enhancedError.statusCode || 401, { message: enhancedError.message });
 	}
 });

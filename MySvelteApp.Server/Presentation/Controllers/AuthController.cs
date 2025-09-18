@@ -68,7 +68,7 @@ public class AuthController : ControllerBase
         var errorResponse = new AuthErrorResponse
         {
             Message = errorMessage,
-            ErrorType = result.ErrorType
+            ErrorType = result.ErrorType,
         };
 
         return result.ErrorType switch

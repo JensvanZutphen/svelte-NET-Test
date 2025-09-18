@@ -107,21 +107,27 @@ builder.Services.AddRateLimiter(options =>
                 PermitLimit = 100, // 100 requests per window
                 Window = TimeSpan.FromMinutes(1), // per minute
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                QueueLimit = 0 // No queuing, reject immediately
-            }));
+                QueueLimit = 0, // No queuing, reject immediately
+            }
+        )
+    );
 
     // Stricter rate limiting for authentication endpoints
-    options.AddPolicy("auth-strict", httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            factory: partition => new FixedWindowRateLimiterOptions
-            {
-                AutoReplenishment = true,
-                PermitLimit = 5, // Only 5 auth attempts per window
-                Window = TimeSpan.FromMinutes(5), // per 5 minutes
-                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                QueueLimit = 0 // No queuing, reject immediately
-            }));
+    options.AddPolicy(
+        "auth-strict",
+        httpContext =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                factory: partition => new FixedWindowRateLimiterOptions
+                {
+                    AutoReplenishment = true,
+                    PermitLimit = 5, // Only 5 auth attempts per window
+                    Window = TimeSpan.FromMinutes(5), // per 5 minutes
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 0, // No queuing, reject immediately
+                }
+            )
+    );
 
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
@@ -136,7 +142,7 @@ builder.Services.AddRateLimiter(options =>
             Status = StatusCodes.Status429TooManyRequests,
             Title = "Too Many Requests",
             Detail = "You have made too many requests. Please try again later.",
-            Instance = context.HttpContext.Request.Path
+            Instance = context.HttpContext.Request.Path,
         };
 
         await context.HttpContext.Response.WriteAsJsonAsync(problemDetails, token);
@@ -282,17 +288,23 @@ app.MapControllers().RequireRateLimiting();
 app.MapHealthChecks("/health").AllowAnonymous();
 
 // Stricter rate limiting for authentication endpoints
-app.MapPost("/Auth/login", async (IAuthService authService, LoginRequest request) =>
-{
-    var result = await authService.LoginAsync(request);
-    return result.Success ? Results.Ok(result) : Results.BadRequest(result);
-})
-.RequireRateLimiting(policyName: "auth-strict");
+app.MapPost(
+        "/Auth/login",
+        async (IAuthService authService, LoginRequest request) =>
+        {
+            var result = await authService.LoginAsync(request);
+            return result.Success ? Results.Ok(result) : Results.BadRequest(result);
+        }
+    )
+    .RequireRateLimiting(policyName: "auth-strict");
 
-app.MapPost("/Auth/register", async (IAuthService authService, RegisterRequest request) =>
-{
-    var result = await authService.RegisterAsync(request);
-    return result.Success ? Results.Ok(result) : Results.BadRequest(result);
-})
-.RequireRateLimiting(policyName: "auth-strict");
+app.MapPost(
+        "/Auth/register",
+        async (IAuthService authService, RegisterRequest request) =>
+        {
+            var result = await authService.RegisterAsync(request);
+            return result.Success ? Results.Ok(result) : Results.BadRequest(result);
+        }
+    )
+    .RequireRateLimiting(policyName: "auth-strict");
 app.Run();

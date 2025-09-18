@@ -49,7 +49,7 @@ export class RateLimiter {
 			try {
 				attempts = JSON.parse(stored);
 				// Filter out old attempts outside the window
-				attempts = attempts.filter(timestamp => now - timestamp < this.config.windowMs);
+				attempts = attempts.filter((timestamp) => now - timestamp < this.config.windowMs);
 			} catch {
 				attempts = [];
 			}
@@ -94,7 +94,7 @@ export class RateLimiter {
 
 		// Add current attempt and filter out old ones
 		attempts.push(now);
-		attempts = attempts.filter(timestamp => now - timestamp < this.config.windowMs);
+		attempts = attempts.filter((timestamp) => now - timestamp < this.config.windowMs);
 
 		localStorage.setItem(key, JSON.stringify(attempts));
 	}

@@ -1,7 +1,12 @@
 // if the user is not authenticated, redirect to the login page
 import { redirect } from '@sveltejs/kit';
 import { logger } from '$lib/server/logger';
-import { decodeJwt, extractUserFromToken, isTokenExpired, isValidTokenFormat } from '$lib/utils/jwt';
+import {
+	decodeJwt,
+	extractUserFromToken,
+	isTokenExpired,
+	isValidTokenFormat
+} from '$lib/utils/jwt';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ cookies }) => {

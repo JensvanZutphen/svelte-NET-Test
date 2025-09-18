@@ -65,7 +65,9 @@
 
 							// Handle rate limiting errors specifically
 							if (enhancedError.statusCode === 429) {
-								toast.error('Too many login attempts. Please wait a few minutes before trying again.');
+								toast.error(
+									'Too many login attempts. Please wait a few minutes before trying again.'
+								);
 							} else {
 								toast.error(userFriendlyMessage);
 							}

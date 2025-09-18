@@ -7,7 +7,7 @@ export enum AuthErrorType {
 	None = 0,
 	Validation = 1,
 	Conflict = 2,
-	Unauthorized = 3,
+	Unauthorized = 3
 }
 
 export interface EnhancedAuthError {
@@ -27,7 +27,7 @@ const ERROR_PATTERNS = {
 	emailTaken: /email.*registered/i,
 	invalidCredentials: /invalid.*username.*password/i,
 	tokenExpired: /token.*expired/i,
-	tokenInvalid: /token.*invalid/i,
+	tokenInvalid: /token.*invalid/i
 } as const;
 
 const extractAuthMessage = (payload: unknown): string | undefined => {
@@ -41,22 +41,25 @@ const extractAuthMessage = (payload: unknown): string | undefined => {
  * Determine error type based on message content
  */
 const determineErrorType = (message: string): AuthErrorType => {
-	if (ERROR_PATTERNS.usernameRequired.test(message) ||
+	if (
+		ERROR_PATTERNS.usernameRequired.test(message) ||
 		ERROR_PATTERNS.emailRequired.test(message) ||
 		ERROR_PATTERNS.passwordRequired.test(message) ||
 		ERROR_PATTERNS.passwordTooShort.test(message) ||
-		ERROR_PATTERNS.passwordComplexity.test(message)) {
+		ERROR_PATTERNS.passwordComplexity.test(message)
+	) {
 		return AuthErrorType.Validation;
 	}
 
-	if (ERROR_PATTERNS.usernameTaken.test(message) ||
-		ERROR_PATTERNS.emailTaken.test(message)) {
+	if (ERROR_PATTERNS.usernameTaken.test(message) || ERROR_PATTERNS.emailTaken.test(message)) {
 		return AuthErrorType.Conflict;
 	}
 
-	if (ERROR_PATTERNS.invalidCredentials.test(message) ||
+	if (
+		ERROR_PATTERNS.invalidCredentials.test(message) ||
 		ERROR_PATTERNS.tokenExpired.test(message) ||
-		ERROR_PATTERNS.tokenInvalid.test(message)) {
+		ERROR_PATTERNS.tokenInvalid.test(message)
+	) {
 		return AuthErrorType.Unauthorized;
 	}
 
@@ -66,7 +69,10 @@ const determineErrorType = (message: string): AuthErrorType => {
 /**
  * Enhanced error resolution with type classification and better fallbacks
  */
-export const resolveAuthError = (err: unknown, fallback: string = 'An unexpected error occurred'): EnhancedAuthError => {
+export const resolveAuthError = (
+	err: unknown,
+	fallback: string = 'An unexpected error occurred'
+): EnhancedAuthError => {
 	let message = fallback;
 	let statusCode: number | undefined;
 	let errorType = AuthErrorType.None;
